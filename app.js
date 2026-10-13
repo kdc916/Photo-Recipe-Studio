@@ -135,7 +135,7 @@ const PRSEngine = (() => {
     let r=(rgb>>>16&255)/255,g=(rgb>>>8&255)/255,b=(rgb&255)/255;
     const smx=Math.max(r0,g0,b0),smn=Math.min(r0,g0,b0);
     if(smx-smn<=3){const y=clamp(.2126*r+.7152*g+.0722*b);
-      return (Math.round(clamp(y+(r-y)*.32)*255)<<16)|(Math.round(clamp(y+(g-y)*.32)*255)<<8)|(Math.round(clamp(y+(b-y)*.32)*255);}
+      return (Math.round(clamp(y+(r-y)*.32)*255)<<16)|(Math.round(clamp(y+(g-y)*.32)*255)<<8)|Math.round(clamp(y+(b-y)*.32)*255);}
     const mx=smx/255,mn=smn/255,d=mx-mn;if(d<.025)return rgb;
     const rr=r0/255,gg=g0/255,bb=b0/255;
     let h=mx===rr?(gg-bb)/d:mx===gg?2+(bb-rr)/d:4+(rr-gg)/d;
@@ -145,7 +145,7 @@ const PRSEngine = (() => {
       *clamp((sat-.06)/.11)*clamp((.72-sat)/.20);
     if(skin<=.0001)return rgb;
     const br=(before>>>16&255)/255,bg=(before>>>8&255)/255,bbl=(before&255)/255,mix=skin*.30;
-    return (Math.round(clamp(r*(1-mix)+br*mix)*255)<<16)|(Math.round(clamp(g*(1-mix)+bg*mix)*255)<<8)|(Math.round(clamp(b*(1-mix)+bbl*mix)*255);
+    return (Math.round(clamp(r*(1-mix)+br*mix)*255)<<16)|(Math.round(clamp(g*(1-mix)+bg*mix)*255)<<8)|Math.round(clamp(b*(1-mix)+bbl*mix)*255);
   }
   function pixelPacked(r0,g0,b0,p) {
     if(p.strength<=0||p.ident)return (r0<<16)|(g0<<8)|b0;
