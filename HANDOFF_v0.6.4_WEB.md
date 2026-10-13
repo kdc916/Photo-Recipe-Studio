@@ -22,3 +22,9 @@ GitHub 저장소 `kdc916/Photo-Recipe-Studio`의 루트에 `index.html`, `app.js
 
 ## 재발 시 진단
 스크린샷에 '앱 초기화 실패' 메시지가 있는지 확인하고, 개발자 도구 콘솔/네트워크 탭에서 app.js 다운로드 성공 여부를 확인. 성공한 앱은 `window.PRS_DIAGNOSTIC.engineReady===true`.
+## 확정된 근본 원인 (2026-10-13)
+
+GitHub 배포본을 다운로드해 구문 검사한 결과 `p0SubjectGuard()`의 두 반환식에 불필요한 여는 괄호가 있어 JavaScript가 파싱 단계에서 `SyntaxError: Unexpected token ;`를 발생시켰습니다. 로컬 Chromium 테스트용 파일에는 이 구문 오류가 없어서 이전 QA가 오류를 발견하지 못했습니다. GitHub `app.js`에서 두 괄호를 제거한 후 **GitHub에서 파일을 다시 읽어 구문 검사 PASS**를 확인했습니다. 추가로 큰 인라인 JS를 `app.js`로 분리하고 부트스트랩 오류 메시지를 제공했습니다.
+
+향후 모든 패치에서는 **반드시 GitHub에 저장된 실제 코드**에 대해 최종 구문 검사를 실시해야 합니다. GitHub Pages CDN에 최신 배포가 반영되는지 별도 확인해야 합니다.
+
