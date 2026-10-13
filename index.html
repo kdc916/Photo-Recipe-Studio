@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#0e1117"/><meta name="description" content="Photo Recipe Studio — Sony 레시피 77개, 필름그레인과 할레이션, 미리보기 확대가 가능한 오프라인 사진 컬러 툴."/><title>Photo Recipe Studio — Web v0.5.2</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#0e1117"/><meta name="description" content="Photo Recipe Studio — Sony 레시피 77개, 필름그레인과 할레이션, 미리보기 확대가 가능한 오프라인 사진 컬러 툴."/><title>Photo Recipe Studio — Web v0.6.0</title>
 <style>:root{color-scheme:dark;--bg:#0e1117;--panel:#191e27;--panel2:#242c36;--border:#343d49;--fg:#f7f5f0;--muted:#a7b1bf;--accent:#e7b57e;--accent2:#edc79b;--mint:#7db3ac;--radius:18px}
 *{box-sizing:border-box}html,body{min-height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 system-ui,-apple-system,"Noto Sans KR",sans-serif}button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}a{color:var(--accent)}.app{max-width:1480px;margin:0 auto;padding:24px 24px 36px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.brand-title{letter-spacing:.07em;font-weight:800;font-size:clamp(19px,2.3vw,27px);line-height:1.1}.subhead{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.05em}.top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.btn{border:1px solid var(--border);background:var(--panel2);color:var(--fg);border-radius:12px;min-height:42px;padding:9px 15px;font-weight:700;transition:filter .14s,background .14s}.btn:hover{filter:brightness(1.12)}.btn.main{background:var(--accent);color:#21180f;border-color:var(--accent);box-shadow:0 5px 14px #0003}.btn.ghost{background:#252d38}.btn.tight{min-height:36px;padding:6px 12px}.btn.active{border-color:var(--accent);color:var(--accent);background:#47362a}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(335px,430px);gap:18px;align-items:start}.stage-wrap{position:sticky;top:14px;min-width:0}.stage{position:relative;height:min(78vh,780px);min-height:360px;overflow:hidden;background:#050608;border:1px solid #272b30;border-radius:17px;touch-action:none;cursor:grab;user-select:none;box-shadow:0 12px 36px #0005}.stage.dragging{cursor:grabbing}.preview-canvas{position:absolute;left:50%;top:50%;max-width:none;display:none;image-rendering:auto;will-change:transform}.placeholder{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:12px;padding:30px;color:var(--muted);pointer-events:none}.placeholder svg{margin:0 auto;opacity:.62}.placeholder strong{color:#f7f5f0;font-size:17px}.placeholder small{font-size:12px}.stage-actions{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:7px;pointer-events:none}.stage-actions>*{pointer-events:auto}.spacer{flex:1}.chip-status{background:#131820e6;border:1px solid #343a42;border-radius:8px;padding:5px 9px;color:#d9dee7;font-size:11px;backdrop-filter:blur(8px)}.help{font-size:12px;color:var(--muted);margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.controls{background:var(--panel);border:1px solid #2c3440;border-radius:21px;padding:20px;min-width:0;box-shadow:0 12px 32px #0002}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:750;font-size:15px;margin-bottom:9px}.muted{font-size:12px;color:var(--muted)}.group-select{width:100%;background:var(--panel2);color:var(--fg);border:1px solid #3a4250;border-radius:11px;padding:12px;min-height:43px;font-weight:650}.preset-count{font-size:12px;color:var(--muted)}.recipe-list{display:flex;gap:7px;flex-wrap:wrap;align-content:flex-start;max-height:155px;overflow:auto;margin:12px 0 14px;padding-bottom:2px;scrollbar-width:thin}.recipe-chip{border:1px solid #3b4551;background:#222a33;color:#dce2e8;padding:8px 11px;border-radius:9px;font-weight:550;font-size:12px;text-align:left}.recipe-chip.selected{background:#503d2b;border-color:var(--accent);color:var(--accent2)}.recipe-name{font-size:16px;font-weight:800;color:#fff}.recipe-desc{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.55}.reason{color:#abb8c5;font-size:11px;margin-top:5px;min-height:16px}.line{border:none;border-top:1px solid #37414d;margin:18px 0}.control-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.slider-block{margin-top:13px}.slider-block label{font-weight:650;font-size:12px;color:#e8edf3}.slider-value{font-size:12px;font-weight:750;color:var(--accent);font-variant-numeric:tabular-nums}input[type=range]{display:block;width:100%;accent-color:var(--accent);margin:8px 0 0;height:25px;touch-action:pan-y}.switch{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:13px;color:#d6dce3}.switch input{appearance:none;width:36px;height:21px;background:#59636e;border-radius:20px;position:relative;flex-shrink:0;cursor:pointer;transition:background .15s}.switch input:before{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#eaf1f5;transition:transform .15s}.switch input:checked{background:#488d87}.switch input:checked:before{transform:translateX(15px)}.fx-toggle{width:100%;background:#29313c;border:1px solid #3b4450;border-radius:10px;color:var(--accent);font-weight:750;padding:11px}.fx-body{padding:8px 3px 0}.fx-body[hidden]{display:none}.metadata{border:1px solid #38414b;border-radius:10px;padding:9px;color:#abb6c5;font-size:11px;white-space:pre-wrap;line-height:1.5;margin-top:9px}.actions{display:flex;gap:8px;margin-top:17px}.actions .btn{flex:1}.notice{font-size:11px;color:#98a2af;margin-top:12px;line-height:1.65}.progressbar{height:3px;background:#333b46;overflow:hidden;border-radius:4px;margin-top:12px}.progressbar i{display:block;height:100%;width:0%;background:var(--accent);transition:width .16s}.status{font-size:12px;color:#aeb8c5;margin-top:8px;min-height:20px}.status.error{color:#ffa19d}.foot{font-size:11px;color:#84909c;text-align:center;margin:20px 0 0}.pill{border:1px solid #555f69;background:#2c3540;border-radius:30px;padding:4px 9px;font-size:11px;color:#d7dee6}.hidden{display:none!important}@media(max-width:850px){.app{padding:12px 10px 22px}.layout{grid-template-columns:1fr;gap:10px}.topbar{margin-bottom:11px;padding:2px 4px}.stage-wrap{position:relative;top:auto}.stage{height:clamp(290px,53svh,610px);min-height:290px;border-radius:12px}.controls{padding:15px;border-radius:16px}.help{margin:7px 5px 3px}.brand-title{font-size:19px}.subhead{font-size:10px}.btn.main{min-height:40px;padding:8px 12px}.recipe-list{max-height:132px}.foot{padding-bottom:15px}}@media(max-width:420px){.brand-title{font-size:16px}.subhead{font-size:9px}.stage-actions{top:8px;left:8px;right:8px}.stage-actions .btn.tight{padding:5px 9px;font-size:12px}.controls{padding:13px}.recipe-chip{padding:7px 9px}}
 </style></head><body><div class="app">
   <header class="topbar">
-    <div><div class="brand-title">PHOTO RECIPE STUDIO</div><div class="subhead">SONY RECIPE · WEB v0.5.2 <span style="color:var(--accent)">/</span> GR POSITIVE TUNE</div></div>
+    <div><div class="brand-title">PHOTO RECIPE STUDIO</div><div class="subhead">SONY RECIPE · WEB v0.6.0 <span style="color:var(--accent)">/</span> GR POSITIVE TUNE</div></div>
     <div class="top-actions"><button class="btn main" id="openTop">＋ 사진 열기</button></div>
   </header>
   <main class="layout">
@@ -26,6 +26,7 @@
       <div id="recipeReason" class="reason"></div>
       <hr class="line"/>
       <div class="control-row"><label class="switch"><input id="creative" type="checkbox" checked/><span>브랜드 특성 보강 <span class="muted">(실험적)</span></span></label></div>
+      <div class="control-row" style="margin-top:8px"><label class="switch"><input id="p0" type="checkbox" checked/><span>P0 색상 보호 <span class="muted">(OFF: 이전 결과 비교)</span></span></label></div>
       <div class="slider-block"><div class="control-row"><label for="strength">필터 강도</label><output class="slider-value" id="strengthValue">100%</output></div><input id="strength" type="range" min="0" max="100" value="100" step="1"/></div>
       <hr class="line"/>
       <button class="fx-toggle" id="fxToggle" aria-expanded="false">필름 FX / EXIF <span id="fxArrow">▾</span></button>
@@ -67,7 +68,7 @@ const PRSEngine = (() => {
     return clamp(v+4*k*v*(1-v)*(2*v-1));
   };
   const highKey=v=>clamp(v+.10*v*(1-v));
-  function prepare(recipe, look, strength, assist, meta) {
+  function prepare(recipe, look, strength, assist, meta, p0=false) {
     const p=recipe.sony_settings, style=p.creative_style||'Standard';
     let sat=1,con=1,r=1,g=1,b=1,bw=0,sepia=false;
     const effect=p.picture_effect_id||0;
@@ -86,7 +87,9 @@ const PRSEngine = (() => {
     else if(effect===7){bw=1;con=1.27;}
     // v0.5.2: the two balanced looks do not stack Sony Vivid/+3 with brand saturation.
     // Balanced presets defer chroma until after tone mapping, avoiding linear RGB clipping.
-    const saturation=look?.balancedSaturation>0?1:clamp(sat*(1+(effect?0:.105*p.saturation_steps))*(look?look.saturation:1),0,2.5);
+    const originalSat=clamp(sat*(1+(effect?0:.105*p.saturation_steps))*(look?look.saturation:1),0,2.5);
+    const postSaturation=p0&&bw===0&&!(look?.balancedSaturation>0)?clamp(1+(originalSat-1)*(originalSat>1?.47:.72),.72,1.18):1;
+    const saturation=p0?1:look?.balancedSaturation>0?1:originalSat;
     const contrast=look?.balancedContrast>0?look.balancedContrast:clamp(con*(1+(effect?0:.055*p.contrast_steps))*(look?look.contrast:1),.65,1.75);
     const exposure=look?1:Math.pow(2,p.exposure_bias_third_stops/3);
     const creativeExposure=look?p.exposure_bias_third_stops/3*(look?.balancedSaturation>0?.035:.16):0;
@@ -98,7 +101,7 @@ const PRSEngine = (() => {
     const dro=p.dro_id>=1&&p.dro_id<=5?p.dro_id*.012:0;
     const weights=look?.monoWeights||[.2126,.7152,.0722];
     const ident=!look&&!effect&&style==='Standard'&&p.saturation_steps===0&&p.contrast_steps===0&&p.sharpness_steps===0&&p.wb_amber_blue_steps===0&&p.wb_green_magenta_steps===0&&p.exposure_bias_third_stops===0&&(!p.kelvin||p.white_balance_mode_id!==14)&&(p.dro_id===0||p.dro_id===6);
-    return {strength:clamp(strength),look,style,saturation,contrast,exposure,creativeExposure,
+    return {strength:clamp(strength),look,style,saturation,contrast,exposure,creativeExposure,p0,postSaturation,
       redGain:clamp(r*(1+amber-green*.4),.5,1.5),greenGain:clamp(g*(1+green),.5,1.5),blueGain:clamp(b*(1-amber-green*.4),.5,1.5),
       dro,bw,weights,sepia,effect,effectSub:p.picture_effect_subparameter,sharp:effect?0:clamp(p.sharpness_steps*.15,-.45,.55),ident};
   }
@@ -109,11 +112,11 @@ const PRSEngine = (() => {
     let y=clamp(.2126*r+.7152*g+.0722*b);
     if(p.creativeExposure!==0){const shift=p.creativeExposure*4*y*(1-y);r=clamp(r+shift);g=clamp(g+shift);b=clamp(b+shift);y=clamp(.2126*r+.7152*g+.0722*b);}
     let max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min;
-    if(l.vibrance!==0&&p.bw===0&&delta>.00001){const factor=clamp(1+l.vibrance*(1-clamp(delta*1.6)),.7,1.4);
+    if(l.vibrance!==0&&p.bw===0&&delta>.00001){const factor=clamp(1+l.vibrance*(1-clamp(delta*1.6))*(p.p0?.4:1),.7,1.4);
       r=clamp(y+(r-y)*factor);g=clamp(y+(g-y)*factor);b=clamp(y+(b-y)*factor);max=Math.max(r,g,b);min=Math.min(r,g,b);delta=max-min;}
     if(l.sectorSat&&p.bw===0&&delta>.00001){let h=max===r?(g-b)/delta:max===g?2+(b-r)/delta:4+(r-g)/delta;if(h<0)h+=6;
       const first=Math.floor(h),q=h-first,sects=l.sectorSat;
-      const factor=clamp(1+sects[first]*(1-q)+sects[(first+1)%6]*q,.55,1.48);
+      const factor=clamp(1+(sects[first]*(1-q)+sects[(first+1)%6]*q)*(p.p0?.55:1),.55,1.48);
       r=clamp(y+(r-y)*factor);g=clamp(y+(g-y)*factor);b=clamp(y+(b-y)*factor);
     }
     const taper=4*y*(1-y);
@@ -160,6 +163,32 @@ const PRSEngine = (() => {
     }
     return (Math.round(clamp(r)*255)<<16)|(Math.round(clamp(g)*255)<<8)|Math.round(clamp(b)*255);
   }
+  // P0: display-referred gamut-aware chroma shift, matching ColorEngine.java.
+  function p0Chroma(rgb,target){
+    let r=(rgb>>>16&255)/255,g=(rgb>>>8&255)/255,b=(rgb&255)/255;
+    const max=Math.max(r,g,b),min=Math.min(r,g,b);if(max-min<.008)return rgb;
+    const y=clamp(.2126*r+.7152*g+.0722*b);let gain=target;
+    if(gain>1)gain=1+(gain-1)*(1-.72*max);
+    if(gain>1){if(max>y)gain=Math.min(gain,(1-y)/(max-y));if(min<y)gain=Math.min(gain,y/(y-min));}
+    return (Math.round(clamp(y+(r-y)*gain)*255)<<16)|(Math.round(clamp(y+(g-y)*gain)*255)<<8)|Math.round(clamp(y+(b-y)*gain)*255);
+  }
+  // P0: neutral patch and warm-color midtone protection; not face recognition.
+  function p0SubjectGuard(rgb,before,r0,g0,b0){
+    let r=(rgb>>>16&255)/255,g=(rgb>>>8&255)/255,b=(rgb&255)/255;
+    const smx=Math.max(r0,g0,b0),smn=Math.min(r0,g0,b0);
+    if(smx-smn<=3){const y=clamp(.2126*r+.7152*g+.0722*b);
+      return (Math.round(clamp(y+(r-y)*.32)*255)<<16)|(Math.round(clamp(y+(g-y)*.32)*255)<<8)|(Math.round(clamp(y+(b-y)*.32)*255);}
+    const mx=smx/255,mn=smn/255,d=mx-mn;if(d<.025)return rgb;
+    const rr=r0/255,gg=g0/255,bb=b0/255;
+    let h=mx===rr?(gg-bb)/d:mx===gg?2+(bb-rr)/d:4+(rr-gg)/d;
+    if(h<0)h+=6;
+    const sat=d/Math.max(mx,.0001),lum=.2126*rr+.7152*gg+.0722*bb;
+    const skin=clamp((h-.12)/.22)*clamp((1.08-h)/.30)*clamp((lum-.20)/.23)*clamp((.95-lum)/.20)
+      *clamp((sat-.06)/.11)*clamp((.72-sat)/.20);
+    if(skin<=.0001)return rgb;
+    const br=(before>>>16&255)/255,bg=(before>>>8&255)/255,bbl=(before&255)/255,mix=skin*.30;
+    return (Math.round(clamp(r*(1-mix)+br*mix)*255)<<16)|(Math.round(clamp(g*(1-mix)+bg*mix)*255)<<8)|(Math.round(clamp(b*(1-mix)+bbl*mix)*255);
+  }
   function pixelPacked(r0,g0,b0,p) {
     if(p.strength<=0||p.ident)return (r0<<16)|(g0<<8)|b0;
     let r=toLin[r0]*p.redGain*p.exposure,g=toLin[g0]*p.greenGain*p.exposure,b=toLin[b0]*p.blueGain*p.exposure;
@@ -169,6 +198,7 @@ const PRSEngine = (() => {
     if(p.bw>0){const y=r*p.weights[0]+g*p.weights[1]+b*p.weights[2];r=y;g=y;b=y;
       if(p.sepia){r*=1.10;g*=1.035;b*=.80;}}
     if(p.effect===5){r=highKey(r);g=highKey(g);b=highKey(b);}
+    if(p.p0){const peak=Math.max(r,g,b);if(peak>1){r/=peak;g/=peak;b/=peak;}}
     let rr=Math.round(tone(encode(r)/255,p.contrast)*255);
     let gg=Math.round(tone(encode(g)/255,p.contrast)*255);
     let bb=Math.round(tone(encode(b)/255,p.contrast)*255);
@@ -178,7 +208,12 @@ const PRSEngine = (() => {
       else if(sub===2){R-=d*.5;G+=d;B-=d*.5;}
       else{R-=d*.3;G+=d*.15;B+=d;}
       rr=Math.round(clamp(R)*255);gg=Math.round(clamp(G)*255);bb=Math.round(clamp(B)*255);}
-    if(p.look){const color=p.look.balancedSaturation>0?balancedFinish(rr,gg,bb,p):creativeFinish(rr,gg,bb,p);rr=color>>>16&255;gg=color>>>8&255;bb=color&255;}
+    let packed=(rr<<16)|(gg<<8)|bb;
+    if(p.p0&&p.postSaturation!==1)packed=p0Chroma(packed,p.postSaturation);
+    const beforeLook=packed;
+    if(p.look){packed=p.look.balancedSaturation>0?balancedFinish(packed>>>16&255,packed>>>8&255,packed&255,p):creativeFinish(packed>>>16&255,packed>>>8&255,packed&255,p);}
+    if(p.p0)packed=p0SubjectGuard(packed,beforeLook,r0,g0,b0);
+    rr=packed>>>16&255;gg=packed>>>8&255;bb=packed&255;
     if(p.strength>=1)return (rr<<16)|(gg<<8)|bb;
     const inv=1-p.strength;
     return (Math.round(r0*inv+rr*p.strength)<<16)|(Math.round(g0*inv+gg*p.strength)<<8)|Math.round(b0*inv+bb*p.strength);
@@ -224,7 +259,7 @@ const PRSEngine = (() => {
   const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
   async function process(imageData,recipe,look,opts,metadata={},cancel=()=>false,report=()=>{}) {
     const w=imageData.width,h=imageData.height,source=imageData.data;
-    const out=new Uint8ClampedArray(source),p=prepare(recipe,look,opts.strength/100,opts.exif,metadata);
+    const out=new Uint8ClampedArray(source),p=prepare(recipe,look,opts.strength/100,opts.exif,metadata,opts.p0===true);
     const fx=opts.fx||{grain:0,grainSize:30,halation:0,haloRadius:35};
     // Native sharpens pixel from ORIGINAL neighbor data before color mapping.
     if(!p.ident&&p.strength>0){for(let y=0;y<h;y++){
@@ -276,7 +311,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
   const el={stage:byId('stage'),canvas:byId('photoCanvas'),placeholder:byId('placeholder'),group:byId('groupSelect'),
     list:byId('recipeList'),name:byId('recipeName'),detail:byId('recipeDetail'),reason:byId('recipeReason'),
-    strength:byId('strength'),creative:byId('creative'),input:byId('imageInput'),open:byId('openTop'),
+    strength:byId('strength'),creative:byId('creative'),p0:byId('p0'),input:byId('imageInput'),open:byId('openTop'),
     compare:byId('compareBtn'),fit:byId('fitBtn'),save:byId('saveBtn'),reset:byId('resetBtn'),
     fxToggle:byId('fxToggle'),fxBody:byId('fxBody'),fxArrow:byId('fxArrow'),status:byId('status'),
     progress:byId('progressWrap'),fill:byId('progressFill'),dims:byId('imageDims'),zoomLabel:byId('zoomLabel'),
@@ -287,7 +322,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     revision:0,processing:false,saving:false,original:false,debounce:0,
     fitW:0,fitH:0,zoom:1,panX:0,panY:0,pointers:new Map(),pinch:null,lastTap:0,lastTapPos:null,lastTouchToggle:0};
   const number=id=>Number(el[id].value);
-  const opts=()=>({strength:number('strength'),creative:el.creative.checked,exif:el.exif.checked,
+  const opts=()=>({strength:number('strength'),creative:el.creative.checked,p0:el.p0.checked,exif:el.exif.checked,
     fx:{grain:number('grain'),grainSize:number('grainSize'),halation:number('halation'),haloRadius:number('haloRadius')}});
   const getLook=r=>looks.id[r.id]||looks.group[r.group]||null;
   function setStatus(s,error=false){el.status.textContent=s;el.status.classList.toggle('error',error);}
@@ -380,9 +415,10 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     el[id].addEventListener('input',()=>{byId(id+'Value').textContent=el[id].value+'%';requestPreview();});
   }
   el.creative.addEventListener('change',()=>{displayRecipe();requestPreview();});
+  el.p0.addEventListener('change',requestPreview);
   el.exif.addEventListener('change',requestPreview);
   el.fxToggle.addEventListener('click',()=>{const open=el.fxBody.hidden;el.fxBody.hidden=!open;el.fxArrow.textContent=open?'▴':'▾';el.fxToggle.setAttribute('aria-expanded',String(open));});
-  el.reset.addEventListener('click',()=>{el.strength.value=100;el.creative.checked=true;
+  el.reset.addEventListener('click',()=>{el.strength.value=100;el.creative.checked=true;el.p0.checked=true;
     for(const [id,v] of Object.entries({grain:0,grainSize:30,halation:0,haloRadius:35})){el[id].value=v;byId(id+'Value').textContent=v+'%';}
     el.exif.checked=false;byId('strengthValue').textContent='100%';displayRecipe();requestPreview();});
   const emptyMeta=()=>({make:'',model:'',iso:0,wbMode:-1,lightSource:-1,flash:-1,colorSpace:-1,aperture:0,exposureSeconds:0,focalLength:0});
