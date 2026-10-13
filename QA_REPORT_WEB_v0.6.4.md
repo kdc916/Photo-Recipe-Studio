@@ -18,3 +18,10 @@
 | Actual GitHub Pages CDN + user's browser after patch | NOT VERIFIED |
 
 No color coefficient or Android change in v0.6.4; this is a web startup/deployment fix.
+## 추가 배포본 검증 결과
+
+- 이전 GitHub 스크립트: `SyntaxError: Unexpected token ;` **실제 재현**.
+- 원인: P0 피부톤 보호 보정 함수의 잘못된 괄호 2곳.
+- 수정 후 GitHub에서 다시 불러온 **실제 `app.js` 구문 검사 PASS**.
+- Pages 공개 주소 캐시 및 사용자 환경에서 실제 로딩은 아직 확인되지 않았습니다.
+
