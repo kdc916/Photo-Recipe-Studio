@@ -1,21 +1,19 @@
-# Photo Recipe Studio — Web v0.6.0 (P0 Color Stability)
+# Photo Recipe Studio WEB v0.6.1 — Preview Fix
 
-GitHub Pages-ready, offline-first photo color application based on 77 Sony Recipe Lab camera-setting recipes. This is an **approximation**, not an official manufacturer LUT.
+Offline single-file photo recipe tool using 77 original Sony camera setting recipes (approximation, not manufacturer LUT).
 
-## P0 changes
-- **P0 색상 보호** switch (default ON). OFF restores the previous v0.5.2 processing path for A/B testing.
-- Stops stacking high saturation in linear RGB for all 77 recipes while P0 is enabled. Instead uses bounded, gamut-aware chroma after tone mapping in display-referred sRGB.
-- Preserves the ratio of linear RGB channels when highlights exceed 1.0, instead of clipping each channel independently.
-- Softens additional brand vibrance and hue-sector amplification in P0.
-- Guards nearly neutral RGB regions and warm/orange midtones. These are *color heuristics, not face recognition*.
-- Retains source 77 recipes, 12 categories, Film Grain, Halation, EXIF, zoom/Fit and JPG export.
+## Fix: 'color unchanged'
+- **FACTORY (ST)** is an identity preset; by design it leaves RGB unchanged even at 100% strength.
+- Previously, if **원본 보기** was enabled, changing recipes/strength/P0 still recalculated output but kept showing the original image. Now editing automatically exits original comparison mode.
+- An explicit **원본 표시 중 / 보정 미리보기** badge identifies which image is displayed.
+- Preview status displays sampled **mean absolute RGB difference / 255** relative to the source image. It is a magnitude diagnostic, **not Delta-E accuracy**, not a quality score.
+- P0 protects color from clipping and extra chroma. It does not create a new film look. For Velvia and Ricoh Positive the ON/OFF difference is deliberately tiny because both already use a balanced processing branch.
 
-## GitHub Pages
-Source: **Deploy from a branch**; Branch: **main**; Folder: **/(root)**. No server or CDN.
+## Test
+Headless Chromium with a real JPEG passed: Factory unchanged, Fuji Velvia and Ricoh GR Positive both altered pixels, and toggling original then changing recipe/P0/strength returned to processed view. Java engine smoke, grayscale and 77-recipe regression tests pass.
 
-## Verification
-- **10,164 / 10,164** Android Java ↔ web JavaScript sample RGB cases match (maximum channel difference 0).
-- Legacy Java regression, 77-recipe sweep (20,097 sample pixels), and dedicated P0 invariants pass.
-- Actual APK build, browser visual checks, calibrated reference measurements and ΔE are **not verified** in this environment. Local browser navigation was blocked by environment restrictions.
+## Deployment
+GitHub Pages: main / (root). If cached, use hard-refresh or `?v=0.6.1`. No external script/CDN needed. All processing occurs in the browser.
 
-See `HANDOFF_v0.6.0_WEB.md` and `QA_REPORT_WEB_v0.6.0.md`.
+## Caveat
+No new color coefficients were added in v0.6.1. Native Android APK build and manufacturer ΔE calibration are unverified here.
