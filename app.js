@@ -1,6 +1,6 @@
 
-// Build v0.10.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.10.0',engineReady:false};
+// Build v0.11.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
+window.PRS_DIAGNOSTIC={version:'0.11.0',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -416,16 +416,28 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     if(el.p1.checked&&el.p0.checked&&el.creative.checked&&PRSEngine.p1Profiles[r.id]){el.reason.textContent='P1 필름 특성 · '+PRSEngine.p1Profiles[r.id].name;}
     else el.reason.textContent=r.id==='r000'?'FACTORY는 원본 유지용 레시피입니다. 색감을 적용하려면 다른 레시피를 선택하세요.':((l&&el.creative.checked)?'브랜드 보정 · '+l.rationale:'Sony 카메라 설정값 기반 근사');
   }
+  // P5: recipe changes clear only grain; halation and any user LUT are retained.
+  function resetGrain(){
+    for(const [id,value] of Object.entries({grain:0,grainSize:30,grainSharp:0})){
+      el[id].value=String(value);byId(id+'Value').textContent=value+'%';
+    }
+  }
+  function chooseRecipe(recipe){
+    if(!recipe)return;
+    if(state.recipe&&state.recipe.id===recipe.id)return;
+    state.recipe=recipe;resetGrain();
+    renderRecipes();requestPreview();
+  }
   function renderRecipes(){el.list.replaceChildren();const list=allRecipes.filter(r=>r.group===state.currentGroup);
     el.count.textContent=`${list.length} / ${allRecipes.length}개`;
     for(const r of list){const button=document.createElement('button');button.className='recipe-chip'+(r.id===state.recipe.id?' selected':'');
       button.type='button';button.textContent=r.name;button.setAttribute('aria-pressed',String(r.id===state.recipe.id));
-      button.addEventListener('click',()=>{state.recipe=r;state.listChoice=true;renderRecipes();displayRecipe();requestPreview();});el.list.append(button);}
+      button.addEventListener('click',()=>{state.listChoice=true;chooseRecipe(r);});el.list.append(button);}
     displayRecipe();
   }
   groups.forEach(g=>{const opt=document.createElement('option');opt.value=g;opt.textContent=g;el.group.append(opt);});
   el.group.value=state.currentGroup;
-  el.group.addEventListener('change',()=>{state.currentGroup=el.group.value;state.recipe=allRecipes.find(r=>r.group===state.currentGroup);renderRecipes();requestPreview();});
+  el.group.addEventListener('change',()=>{state.currentGroup=el.group.value;const selected=allRecipes.find(r=>r.group===state.currentGroup);if(state.recipe?.id!==selected?.id){chooseRecipe(selected);}else renderRecipes();});
   renderRecipes();
   function setDisabled(disabled){el.save.disabled=disabled||!state.file;el.compare.disabled=!state.file;el.fit.disabled=!state.file;}
   // File picker must remain reachable even if the previous image was corrupt or too large.
@@ -506,6 +518,8 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   el.p1.addEventListener('change',()=>{displayRecipe();requestPreview();});
   el.p2.addEventListener('change',()=>{displayRecipe();requestPreview();});
   el.exif.addEventListener('change',requestPreview);
+  byId('grainReset').addEventListener('click',()=>{resetGrain();requestPreview();setStatus('그레인 강도·크기·샤픈 초기화 완료');});
+  if(window.matchMedia('(max-width:850px)').matches){byId('advancedPanel').open=false;byId('recipeInfo').open=false;}
   el.fxPresetApply.addEventListener('click',()=>{const t=getTexture(state.recipe);if(!t){setStatus('이 레시피에는 추천 질감이 없습니다. 현재 설정은 유지됩니다.');return;}
     for(const key of ['grain','grainSize','halation','haloRadius']){el[key].value=t[key];byId(key+'Value').textContent=t[key]+'%';}
     setStatus('필름 질감 추천 적용 · '+t.note);requestPreview();});
@@ -633,7 +647,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   if(loadHeicDecoder.pending)return loadHeicDecoder.pending;
   loadHeicDecoder.pending=new Promise((resolve,reject)=>{
     const script=document.createElement('script');
-    script.src='./vendor/heic2any.min.js?v=0.10.0';script.async=true;
+    script.src='./vendor/heic2any.min.js?v=0.11.0';script.async=true;
     script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC 디코더 초기화 실패'));
     script.onerror=()=>reject(new Error('HEIC 디코더 파일을 불러올 수 없습니다.'));
     document.head.appendChild(script);
@@ -731,11 +745,11 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.10.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.11.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.10.0',source:'app.js'};
+  window.PRS_BOOT={state:'ready',version:'0.11.0',source:'app.js'};
   window.PRS_TEST={state,parseExif,opts,getLook,decode,openFile,decodeWithHeicFallback,isHeicFile,loadHeicDecoder,P2_LOOKS,P2_TEXTURES,getTexture};
 })();
 
