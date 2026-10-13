@@ -1,17 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#0e1117"/><meta name="description" content="Photo Recipe Studio — Sony 레시피 77개, 필름그레인과 할레이션, 미리보기 확대가 가능한 오프라인 사진 컬러 툴."/><title>Photo Recipe Studio — Web v0.11.0</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#0e1117"/><meta name="description" content="Photo Recipe Studio — Sony 레시피 77개, 필름그레인과 할레이션, 미리보기 확대가 가능한 오프라인 사진 컬러 툴."/><title>Photo Recipe Studio — Web v0.14.0</title>
 <style>:root{color-scheme:dark;--bg:#0e1117;--panel:#191e27;--panel2:#242c36;--border:#343d49;--fg:#f7f5f0;--muted:#a7b1bf;--accent:#e7b57e;--accent2:#edc79b;--mint:#7db3ac;--radius:18px}
 *{box-sizing:border-box}html,body{min-height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 system-ui,-apple-system,"Noto Sans KR",sans-serif}button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}a{color:var(--accent)}.app{max-width:1480px;margin:0 auto;padding:24px 24px 36px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.brand-title{letter-spacing:.07em;font-weight:800;font-size:clamp(19px,2.3vw,27px);line-height:1.1}.subhead{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.05em}.top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.btn{border:1px solid var(--border);background:var(--panel2);color:var(--fg);border-radius:12px;min-height:42px;padding:9px 15px;font-weight:700;transition:filter .14s,background .14s}.btn:hover{filter:brightness(1.12)}#openTop{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}#openTop:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.btn.main{background:var(--accent);color:#21180f;border-color:var(--accent);box-shadow:0 5px 14px #0003}.btn.ghost{background:#252d38}.btn.tight{min-height:36px;padding:6px 12px}.btn.active{border-color:var(--accent);color:var(--accent);background:#47362a}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(335px,430px);gap:18px;align-items:start}.stage-wrap{position:sticky;top:14px;min-width:0}.stage{position:relative;height:min(78vh,780px);min-height:360px;overflow:hidden;background:#050608;border:1px solid #272b30;border-radius:17px;touch-action:none;cursor:grab;user-select:none;box-shadow:0 12px 36px #0005}.stage.dragging{cursor:grabbing}.preview-canvas{position:absolute;left:50%;top:50%;max-width:none;display:none;image-rendering:auto;will-change:transform}.placeholder{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:12px;padding:30px;color:var(--muted);pointer-events:none}.placeholder svg{margin:0 auto;opacity:.62}.placeholder strong{color:#f7f5f0;font-size:17px}.placeholder small{font-size:12px}.stage-actions{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:7px;pointer-events:none}.stage-actions>*{pointer-events:auto}.spacer{flex:1}.chip-status{background:#131820e6;border:1px solid #343a42;border-radius:8px;padding:5px 9px;color:#d9dee7;font-size:11px;backdrop-filter:blur(8px)}.help{font-size:12px;color:var(--muted);margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.controls{background:var(--panel);border:1px solid #2c3440;border-radius:21px;padding:20px;min-width:0;box-shadow:0 12px 32px #0002}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:750;font-size:15px;margin-bottom:9px}.muted{font-size:12px;color:var(--muted)}.group-select{width:100%;background:var(--panel2);color:var(--fg);border:1px solid #3a4250;border-radius:11px;padding:12px;min-height:43px;font-weight:650}.preset-count{font-size:12px;color:var(--muted)}.recipe-list{display:flex;gap:7px;flex-wrap:wrap;align-content:flex-start;max-height:155px;overflow:auto;margin:12px 0 14px;padding-bottom:2px;scrollbar-width:thin}.recipe-chip{border:1px solid #3b4551;background:#222a33;color:#dce2e8;padding:8px 11px;border-radius:9px;font-weight:550;font-size:12px;text-align:left}.recipe-chip.selected{background:#503d2b;border-color:var(--accent);color:var(--accent2)}.recipe-name{font-size:16px;font-weight:800;color:#fff}.recipe-desc{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.55}.reason{color:#abb8c5;font-size:11px;margin-top:5px;min-height:16px}.line{border:none;border-top:1px solid #37414d;margin:18px 0}.control-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.slider-block{margin-top:13px}.slider-block label{font-weight:650;font-size:12px;color:#e8edf3}.slider-value{font-size:12px;font-weight:750;color:var(--accent);font-variant-numeric:tabular-nums}input[type=range]{display:block;width:100%;accent-color:var(--accent);margin:8px 0 0;height:25px;touch-action:pan-y}.switch{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:13px;color:#d6dce3}.switch input{appearance:none;width:36px;height:21px;background:#59636e;border-radius:20px;position:relative;flex-shrink:0;cursor:pointer;transition:background .15s}.switch input:before{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#eaf1f5;transition:transform .15s}.switch input:checked{background:#488d87}.switch input:checked:before{transform:translateX(15px)}.fx-toggle{width:100%;background:#29313c;border:1px solid #3b4450;border-radius:10px;color:var(--accent);font-weight:750;padding:11px}.fx-body{padding:8px 3px 0}.fx-body[hidden]{display:none}.metadata{border:1px solid #38414b;border-radius:10px;padding:9px;color:#abb6c5;font-size:11px;white-space:pre-wrap;line-height:1.5;margin-top:9px}.actions{display:flex;gap:8px;margin-top:17px}.actions .btn{flex:1}.notice{font-size:11px;color:#98a2af;margin-top:12px;line-height:1.65}.progressbar{height:3px;background:#333b46;overflow:hidden;border-radius:4px;margin-top:12px}.progressbar i{display:block;height:100%;width:0%;background:var(--accent);transition:width .16s}.status{font-size:12px;color:#aeb8c5;margin-top:8px;min-height:20px}.status.error{color:#ffa19d}.foot{font-size:11px;color:#84909c;text-align:center;margin:20px 0 0}.pill{border:1px solid #555f69;background:#2c3540;border-radius:30px;padding:4px 9px;font-size:11px;color:#d7dee6}.hidden{display:none!important}@media(max-width:850px){.app{padding:12px 10px 22px}.layout{grid-template-columns:1fr;gap:10px}.topbar{margin-bottom:11px;padding:2px 4px}.stage-wrap{position:relative;top:auto}.stage{height:clamp(290px,53svh,610px);min-height:290px;border-radius:12px}.controls{padding:15px;border-radius:16px}.help{margin:7px 5px 3px}.brand-title{font-size:19px}.subhead{font-size:10px}.btn.main{min-height:40px;padding:8px 12px}.recipe-list{max-height:132px}.foot{padding-bottom:15px}}@media(max-width:420px){.brand-title{font-size:16px}.subhead{font-size:9px}.stage-actions{top:8px;left:8px;right:8px}.stage-actions .btn.tight{padding:5px 9px;font-size:12px}.controls{padding:13px}.recipe-chip{padding:7px 9px}}
 
-/* P5 mobile one-screen photo editing: compact preview + horizontal recipes + collapsible advanced panel. */
+/* P5 compact controls, still accessible by keyboard and screen reader. */
 .small-details{margin:6px 0 10px;border:1px solid #333d49;border-radius:10px;padding:7px 9px;background:#1d2530}
 .small-details>summary{cursor:pointer;font-size:12px;color:var(--accent2);font-weight:650;list-style-position:inside;min-height:24px}
 .small-details[open]>summary{margin-bottom:8px}
 .advanced-panel{margin-top:10px}
 .advanced-body{padding:0 3px 6px}
-.fx-row{display:flex;gap:7px;align-items:stretch;margin-top:12px}
-.fx-row .fx-toggle{flex:1;min-width:0}
-.fx-row #grainReset{flex-shrink:0;font-size:11px;padding:7px 9px}
+.fx-row{display:flex;gap:7px;align-items:stretch;margin-top:12px}.fx-row .fx-toggle{flex:1;min-width:0}.fx-row #grainReset{flex-shrink:0;font-size:11px;padding:7px 9px}
 .quick-strength{margin:10px 0 9px}
 @media(max-width:850px){
   html{scroll-padding-top:36svh}body{overscroll-behavior-y:contain}
@@ -24,17 +22,31 @@
   .recipe-chip{white-space:nowrap;flex-shrink:0;scroll-snap-align:center;padding:8px 12px}
   .group-select{min-height:40px;padding:8px 10px}
   .recipe-desc,.reason{font-size:11px}
-  .section-title{margin-bottom:3px}.recipe-name{font-size:14px}
-  .small-details{margin:6px 0 8px;padding:5px 8px}.quick-strength{margin:5px 0}
-  .slider-block{margin-top:8px}.fx-row{margin-top:8px}
+  .section-title{margin-bottom:3px}
+  .recipe-name{font-size:14px}
+  .small-details{margin:6px 0 8px;padding:5px 8px}
+  .quick-strength{margin:5px 0}
+  .slider-block{margin-top:8px}
+  .fx-row{margin-top:8px}
   .fx-row .fx-toggle{padding:7px;min-height:37px}
-  .actions{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 4px);z-index:25;background:#19202aef;padding:7px;border:1px solid #3b4551;border-radius:12px;box-shadow:0 5px 22px #0009}
-  .actions .btn{min-height:39px}.notice{display:none}
+  .actions{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 4px);z-index:25;background:#19202aeF;padding:7px;border:1px solid #3b4551;border-radius:12px;box-shadow:0 5px 22px #0009}
+  .actions .btn{min-height:39px}
+  .notice{display:none}
 }
 @media(max-width:420px){.brand-title{font-size:15px}.top-actions .btn{padding:7px 9px;font-size:12px}.stage-actions{gap:4px}.chip-status{padding:4px 6px;font-size:10px}.help>span:first-child{font-size:9px}}
+
+/* P6–P8 advanced tools remain collapsed to preserve the P5 compact mobile flow */
+.pro-grid{display:grid;gap:14px;margin-top:9px}.pro-grid>b,.pro-grid b{font-size:12px;color:#f4dbb8}
+.pro-grid .control-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0}.pro-grid p{font-size:11px;margin:4px 0}
+.pro-grid input[type=file]{display:block;max-width:100%;font-size:11px;margin:7px 0}
+.mini-select{background:#242c36;color:#f7f5f0;min-height:35px;border:1px solid #485262;border-radius:8px;padding:5px;max-width:100%;font-size:12px}
+.split-control{display:flex;align-items:center;gap:12px;padding:5px 10px;background:#1b232c;border-radius:8px;margin:5px 0}
+.split-control[hidden]{display:none}.split-control label{white-space:nowrap;font-size:11px}.split-control input{flex:1;min-width:0}
+#comparisonCanvas{position:absolute;left:50%;top:50%;height:auto;width:auto;transform-origin:center center;clip-path:inset(0 50% 0 0)}
+@media(max-width:850px){#professionalTools,#exportQualityPanel{margin-top:6px}#splitToggle{font-size:10px;padding:5px 7px}.split-control{padding:3px 8px}}
 </style></head><body><div class="app">
   <header class="topbar">
-    <div><div class="brand-title">PHOTO RECIPE STUDIO</div><div class="subhead">SONY RECIPE · WEB v0.11.0 <span style="color:var(--accent)">/</span> P5 MOBILE WORKFLOW</div></div>
+    <div><div class="brand-title">PHOTO RECIPE STUDIO</div><div class="subhead">SONY RECIPE · WEB v0.14.0 <span style="color:var(--accent)">/</span> P6~P8 STUDIO PRO</div></div>
     <div class="top-actions"><label class="btn main" id="openTop" for="imageInput" role="button" tabindex="0">＋ 사진 열기</label></div>
   </header>
   <main class="layout">
@@ -42,8 +54,9 @@
       <div id="stage" class="stage">
         <canvas class="preview-canvas" id="photoCanvas" aria-label="필터 사진 미리보기"></canvas>
         <div id="placeholder" class="placeholder"><svg width="62" height="62" fill="none" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="12" width="48" height="40" rx="7" stroke="currentColor" stroke-width="2"/><circle cx="21" cy="25" r="5" stroke="currentColor" stroke-width="2"/><path d="m10 43 15-12 11 9 8-7 10 10" stroke="currentColor" stroke-width="2"/></svg><strong>사진을 불러와 시작하세요</strong><span>JPG · PNG · WebP · HEIC (기기 내 보조 디코딩)</span><small>파일은 기기에서만 처리됩니다. 서버 업로드 없음.</small></div>
-        <div class="stage-actions"><span id="zoomLabel" class="chip-status">FIT</span><span id="viewMode" class="chip-status">사진 없음</span><div class="spacer"></div><button id="compareBtn" class="btn tight ghost" disabled>원본 보기</button><button id="fitBtn" class="btn tight ghost" disabled>Fit</button></div>
+        <div class="stage-actions"><span id="zoomLabel" class="chip-status">FIT</span><span id="viewMode" class="chip-status">사진 없음</span><div class="spacer"></div><button id="compareBtn" class="btn tight ghost" disabled>원본 보기</button><button id="splitToggle" class="btn tight ghost">분할 비교</button><button id="fitBtn" class="btn tight ghost" disabled>Fit</button></div>
       </div>
+      <div id="splitControl" class="split-control" hidden><label for="splitRange">원본 ↔ 보정 분할</label><input id="splitRange" type="range" min="0" max="100" value="50"/></div>
       <div class="help"><span>핀치 · 휠 확대 / 드래그 이동 / 더블탭 확대</span><span id="imageDims">사진 없음</span></div>
     </section>
     <section class="controls" aria-label="레시피 편집">
@@ -81,13 +94,27 @@
         <hr class="line" style="margin:10px 0"/><label class="switch"><input id="exif" type="checkbox"/><span>EXIF 참고 보정 <span class="muted">(실험적 · 기본 OFF)</span></span></label>
         <div class="metadata" id="exifInfo">사진을 열면 JPEG EXIF 정보가 표시됩니다.</div>
       </div>
+      <details id="exportQualityPanel" class="small-details" open><summary>P6 고품질 JPG 저장 설정</summary>
+        <div class="control-row"><label for="exportResolution">저장 해상도</label><select id="exportResolution" class="mini-select"><option value="20">20MP (기본)</option><option value="12">12MP (모바일 권장)</option><option value="original">원본 해상도 (지원 기기 한정)</option><option value="preview">미리보기 크기</option></select></div>
+        <div class="slider-block"><div class="control-row"><label for="exportQuality">JPEG 품질</label><output id="exportQualityValue" class="slider-value">95%</output></div><input type="range" id="exportQuality" min="70" max="100" value="95"/></div>
+        <label class="switch"><input id="exportSidecar" type="checkbox"/><span>편집 설정·EXIF 요약 JSON 별도 보관 (ZIP)</span></label>
+        <div class="reason">결과 JPEG는 브라우저 sRGB로 저장됩니다. 원본 ICC·EXIF는 JPEG에 직접 복사하지 않습니다. JSON 보관은 선택 사항입니다.</div>
+      </details>
+      <details id="professionalTools" class="small-details"><summary>P7 기준 색차·P8 전문 편집 도구</summary>
+        <div class="pro-grid"><div><b>P7 기준 RGB 데이터 교정</b><p class="muted">CSV: observed R,G,B, target R,G,B · 0~255 · 6개 이상</p>
+        <input type="file" id="calibrationCSV" accept=".csv,text/csv"/><div id="calibrationMetrics" class="reason">기준 촬영/측정 데이터가 없으면 자동으로 정확한 필름 LUT를 만들 수 없습니다.</div>
+        <button class="btn tight" id="calibrationApply" disabled>교정 LUT 적용</button> <button class="btn tight" id="calibrationDownload" disabled>.cube 저장</button></div>
+        <div><b>P8 작업 이력 · 즐겨찾기</b><div class="control-row"><button id="undoBtn" class="btn tight" disabled>↶ 되돌리기</button><button id="redoBtn" class="btn tight" disabled>↷ 다시 실행</button><button id="favoriteBtn" class="btn tight">☆ 즐겨찾기</button></div><label class="switch"><input id="favoritesOnly" type="checkbox"/><span>선택 회사에서 즐겨찾기만 보기</span></label></div>
+        <div><b>커스텀 레시피</b><div class="control-row"><button id="customSave" class="btn tight">현재 설정 저장</button><select id="customSelect" class="mini-select"></select></div><div class="control-row"><button id="customLoad" class="btn tight">불러오기</button><button id="customDelete" class="btn tight">삭제</button><button id="customExport" class="btn tight">JSON 백업</button><label class="btn tight" for="customImport">JSON 가져오기</label></div><input id="customImport" type="file" accept="application/json,.json" hidden/></div>
+        <div><b>사진 일괄 변환 (최대 10장)</b><input type="file" multiple accept="image/*,.heic,.heif" id="batchFiles"/><div class="control-row"><select id="batchMaxPixels" class="mini-select"><option value="3">3MP</option><option value="8">8MP</option><option value="12">12MP</option></select><button id="batchRun" class="btn tight">현재 레시피로 ZIP 저장</button></div></div></div>
+      </details>
       <div class="actions"><button class="btn ghost" id="resetBtn">필터 초기화</button><button class="btn main" id="saveBtn" disabled>JPG 저장</button></div>
       <div id="progressWrap" class="progressbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progressFill"></i></div>
       <div id="status" class="status" role="status" aria-live="polite">앱 초기화 중 · 레시피 목록이 비어 있다면 스크립트 실행 오류입니다.</div>
       <div class="notice">색감은 Sony 카메라 설정 및 브랜드 룩의 <b>근사 구현</b>입니다. 제조사의 공식 LUT 또는 정량 색차 보정이 아닙니다. EXIF의 촬영 WB와 노출이 JPEG에 이미 반영되어 있으므로 중복 보정하지 않습니다.</div>
     </section>
   </main>
-  <footer class="foot">Photo Recipe Studio · HTML v0.11.0 · MIT source attribution included · 정적 페이지 / 외부 서버 전송 없음</footer>
+  <footer class="foot">Photo Recipe Studio · HTML v0.14.0 · MIT source attribution included · 정적 페이지 / 외부 서버 전송 없음</footer>
 </div>
 <input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,image/*" style="position:absolute;width:1px;height:1px;opacity:0;clip-path:inset(50%);overflow:hidden;pointer-events:none"/>
 
@@ -99,9 +126,9 @@
 (function(){
   var status=document.getElementById('status');
   var hint='페이지를 새로고침해 주세요. 계속되면 화면의 오류 문구를 알려주세요.';
-  window.PRS_BOOT={state:'loading',version:'0.11.0'};
+  window.PRS_BOOT={state:'loading',version:'0.14.0'};
   function fail(message){if(window.PRS_BOOT.state==='ready')return;
-    window.PRS_BOOT={state:'error',version:'0.11.0',error:String(message)};
+    window.PRS_BOOT={state:'error',version:'0.14.0',error:String(message)};
     if(status){status.classList.add('error');status.textContent='앱 초기화 실패: '+message+' · '+hint;}}
   window.PRS_BOOT_FAIL=fail;
   window.addEventListener('error',function(e){if(window.PRS_BOOT.state!=='ready')fail(e.message||'JavaScript 오류');});
@@ -111,5 +138,6 @@
   },2500);});
 })();
 </script>
-<script defer src="./app.js?v=0.11.0" onerror="window.PRS_BOOT_FAIL&&window.PRS_BOOT_FAIL('app.js 파일을 가져오지 못했습니다')"></script>
+<script defer src="./app.js?v=0.14.0" onerror="window.PRS_BOOT_FAIL&&window.PRS_BOOT_FAIL('app.js 파일을 가져오지 못했습니다')"></script>
+<script defer src="./extension.js?v=0.14.0" onerror="document.getElementById('status').textContent='P6~P8 확장 스크립트 로딩 실패 · 기존 사진 편집은 사용 가능'"></script>
 </body></html>
