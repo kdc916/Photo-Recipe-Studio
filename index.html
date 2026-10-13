@@ -419,7 +419,8 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     else {state.lastTap=now;state.lastTapPos=p;}
   },{passive:true});
   el.fit.addEventListener('click',()=>updateFit(true));
-  new ResizeObserver(()=>{if(state.orig)updateFit();}).observe(el.stage);
+  if(typeof ResizeObserver==='function'){new ResizeObserver(()=>{if(state.orig)updateFit();}).observe(el.stage);}
+  else{window.addEventListener('resize',()=>{if(state.orig)updateFit();});}
   el.compare.addEventListener('click',()=>{if(!state.orig)return;state.original=!state.original;
     el.compare.textContent=state.original?'보정 보기':'원본 보기';el.compare.classList.toggle('active',state.original);present(currentData());
     setStatus(state.original?'원본 표시 중 · 보정 화면으로 돌아가려면 보정 보기를 누르세요.':'보정 미리보기 표시 중');});
