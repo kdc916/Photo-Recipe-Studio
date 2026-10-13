@@ -17,3 +17,4 @@
 | Public GitHub Pages CDN propagation | NOT VERIFIED |
 
 P1 only when both P0 and brand look enabled. No external URLs/assets required for application runtime.
+| 8192×5464 source JPEG import + P1 Velvia preview | PASS (2204×1470 preview, mean RGB change 4.5/255; zero JS errors) |
