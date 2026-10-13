@@ -1,6 +1,6 @@
 
-// Build v0.8.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.8.0',engineReady:false};
+// Build v0.9.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
+window.PRS_DIAGNOSTIC={version:'0.9.0',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -259,12 +259,64 @@ const PRSEngine = (() => {
     const interp=arr=>{const a=arr[y0*mw+x0]*(1-ax)+arr[y0*mw+x1]*ax;const b=arr[y1*mw+x0]*(1-ax)+arr[y1*mw+x1]*ax;return a*(1-ay)+b*ay;};
     return clamp(interp(blurred)-.6*interp(mask));
   }
+  // Offline 3D .cube parser: RED varies fastest, then GREEN, then BLUE.
+  // Interprets input/output as display-referred sRGB, not camera RAW data.
+  function parseCube(text){
+    if(typeof text!=='string'||text.length>8*1024*1024)throw new Error('LUT 크기는 8MB 이하만 지원합니다.');
+    let size=0,domainMin=[0,0,0],domainMax=[1,1,1],entries=[],dataStarted=false;
+    for(const raw of text.split(/\r?\n/)){
+      const line=raw.split('#')[0].trim();if(!line)continue;
+      const parts=line.split(/\s+/),name=parts[0].toUpperCase();
+      if(name==='TITLE')continue;
+      if(name==='LUT_1D_SIZE')throw new Error('1D LUT는 지원하지 않습니다. 3D .cube 파일을 선택하세요.');
+      if(name==='LUT_3D_SIZE'){if(dataStarted||size)throw new Error('중복된 LUT 크기');size=Number(parts[1]);if(!Number.isInteger(size)||size<2||size>65)throw new Error('LUT_3D_SIZE는 2~65만 지원합니다.');continue;}
+      if(name==='DOMAIN_MIN'||name==='DOMAIN_MAX'){
+        if(dataStarted||parts.length!==4)throw new Error('DOMAIN 형식 오류');
+        const vals=parts.slice(1).map(Number);if(vals.some(v=>!Number.isFinite(v)))throw new Error('DOMAIN 숫자 오류');
+        if(name==='DOMAIN_MIN')domainMin=vals;else domainMax=vals;continue;
+      }
+      if(!size)throw new Error('LUT_3D_SIZE가 없습니다.');
+      if(parts.length!==3||parts.some(v=>!Number.isFinite(Number(v))))throw new Error('LUT 데이터 숫자 오류');
+      dataStarted=true;for(const part of parts){const n=Number(part);if(n<-.001||n>1.001)throw new Error('LUT 출력은 0~1 sRGB 범위여야 합니다.');entries.push(Math.min(1,Math.max(0,n)));}
+      if(entries.length>size*size*size*3)throw new Error('LUT 데이터가 선언된 크기를 초과합니다.');
+    }
+    if(!size||entries.length!==size*size*size*3)throw new Error('LUT 항목 수가 LUT_3D_SIZE³과 일치하지 않습니다.');
+    if(domainMin.some((v,i)=>v>=domainMax[i]))throw new Error('DOMAIN_MIN은 DOMAIN_MAX보다 작아야 합니다.');
+    return {size,data:new Float32Array(entries),domainMin,domainMax};
+  }
+  // Trilinear .cube evaluation; no per-pixel temporary array allocations.
+  function lutPixel(rgb,lut,weight){
+    if(!lut||weight<=0)return rgb;
+    const rr=(rgb>>>16&255)/255,gg=(rgb>>>8&255)/255,bb=(rgb&255)/255;
+    const sz=lut.size,edge=sz-1,dm=lut.domainMin,dxm=lut.domainMax,table=lut.data;
+    const cx=clamp((rr-dm[0])/(dxm[0]-dm[0]))*edge;
+    const cy=clamp((gg-dm[1])/(dxm[1]-dm[1]))*edge;
+    const cz=clamp((bb-dm[2])/(dxm[2]-dm[2]))*edge;
+    const x=Math.floor(cx),y=Math.floor(cy),z=Math.floor(cz);
+    const xx=Math.min(edge,x+1),yy=Math.min(edge,y+1),zz=Math.min(edge,z+1);
+    const tx=cx-x,ty=cy-y,tz=cz-z;
+    const a=3*(x+sz*(y+sz*z)),b=3*(xx+sz*(y+sz*z));
+    const c=3*(x+sz*(yy+sz*z)),d=3*(xx+sz*(yy+sz*z));
+    const e=3*(x+sz*(y+sz*zz)),f=3*(xx+sz*(y+sz*zz));
+    const g=3*(x+sz*(yy+sz*zz)),h=3*(xx+sz*(yy+sz*zz));
+    const t0=(1-tx),t1=(1-ty),t2=(1-tz),weight0=clamp(weight);
+    const v0=(table[a]*t0+table[b]*tx)*t1+(table[c]*t0+table[d]*tx)*ty;
+    const v1=(table[e]*t0+table[f]*tx)*t1+(table[g]*t0+table[h]*tx)*ty;
+    const r=clamp(rr*(1-weight0)+(v0*t2+v1*tz)*weight0);
+    const w0=(table[a+1]*t0+table[b+1]*tx)*t1+(table[c+1]*t0+table[d+1]*tx)*ty;
+    const w1=(table[e+1]*t0+table[f+1]*tx)*t1+(table[g+1]*t0+table[h+1]*tx)*ty;
+    const green=clamp(gg*(1-weight0)+(w0*t2+w1*tz)*weight0);
+    const q0=(table[a+2]*t0+table[b+2]*tx)*t1+(table[c+2]*t0+table[d+2]*tx)*ty;
+    const q1=(table[e+2]*t0+table[f+2]*tx)*t1+(table[g+2]*t0+table[h+2]*tx)*ty;
+    const blue=clamp(bb*(1-weight0)+(q0*t2+q1*tz)*weight0);
+    return (Math.round(r*255)<<16)|(Math.round(green*255)<<8)|Math.round(blue*255);
+  }
   const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
   async function process(imageData,recipe,look,opts,metadata={},cancel=()=>false,report=()=>{}) {
     const w=imageData.width,h=imageData.height,source=imageData.data;
     const out=new Uint8ClampedArray(source),p=prepare(recipe,look,opts.strength/100,opts.exif,metadata,opts.p0===true);
     p.profile=(opts.p1&&opts.p0&&look)?(P1_PROFILES[recipe.id]||null):null;p.p1=!!p.profile;
-    const fx=opts.fx||{grain:0,grainSize:30,halation:0,haloRadius:35};
+    const fx=opts.fx||{grain:0,grainSize:30,grainSharp:0,halation:0,haloRadius:35};
     // Native sharpens pixel from ORIGINAL neighbor data before color mapping.
     if(!p.ident&&p.strength>0){for(let y=0;y<h;y++){
       if(cancel())return null;
@@ -278,6 +330,19 @@ const PRSEngine = (() => {
       }
       if(y%48===0){report(.68*y/h);await nextFrame();}
     }}
+    // Apply an optional user-calibrated LUT after camera color and before grain/halation.
+    const lut=opts.lut,amount=clamp(Number(opts.lutStrength||0)/100);
+    if(lut&&amount>0){
+      for(let y=0;y<h;y++){
+        if(cancel())return null;
+        for(let x=0;x<w;x++){
+          const i=(y*w+x)*4;if(out[i+3]===0)continue;
+          const color=lutPixel((out[i]<<16)|(out[i+1]<<8)|out[i+2],lut,amount);
+          out[i]=color>>>16&255;out[i+1]=color>>>8&255;out[i+2]=color&255;
+        }
+        if(y%64===0){report(.70*y/h);await nextFrame();}
+      }
+    }
     if(fx.grain>0||fx.halation>0){
       const map=fx.halation>0?haloMap(out,w,h,fx.haloRadius):null;
       const grainScale=opts.exif?(metadata.iso>=3200?.55:metadata.iso>=1600?.68:metadata.iso>=800?.82:1):1;
@@ -291,7 +356,9 @@ const PRSEngine = (() => {
           if(fx.grain>0){const yL=clamp(.2126*r+.7152*g+.0722*b),env=.10+.9*Math.sqrt(Math.max(0,4*yL*(1-yL)));
             const amp=.105*(fx.grain/100)*grainScale*env;
             const n=noise(x,y,w,h,fx.grainSize,0x51f0a),hf=noise(x,y,w,h,Math.max(0,Math.floor(fx.grainSize/2)),0x129ab);
-            const d=amp*(n*.8+hf*.2);r+=d;g+=d;b+=d;}
+            const base=n*.8+hf*.2;
+            const edge=(hf-n)*.50*((fx.grainSharp||0)/100);
+            const d=amp*(base+edge);r+=d;g+=d;b+=d;}
           out[i]=Math.round(clamp(r)*255);out[i+1]=Math.round(clamp(g)*255);out[i+2]=Math.round(clamp(b)*255);
         }
         if(y%48===0){report(.68+.32*y/h);await nextFrame();}
@@ -300,7 +367,7 @@ const PRSEngine = (() => {
     report(1);
     return new ImageData(out,w,h);
   }
-  return {prepare,pixel,process,tone,noise,haloMap,sampleHalo,p1Profiles:P1_PROFILES};
+  return {prepare,pixel,process,tone,noise,haloMap,sampleHalo,p1Profiles:P1_PROFILES,parseCube,lutPixel};
 })();
 if(typeof module!=='undefined')module.exports=PRSEngine;
 
@@ -328,14 +395,14 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     fxToggle:byId('fxToggle'),fxBody:byId('fxBody'),fxArrow:byId('fxArrow'),status:byId('status'),
     progress:byId('progressWrap'),fill:byId('progressFill'),dims:byId('imageDims'),zoomLabel:byId('zoomLabel'),
     exifInfo:byId('exifInfo'),exif:byId('exif'),fxPresetApply:byId('fxPresetApply'),fxPresetHint:byId('fxPresetHint'),viewMode:byId('viewMode'),grain:byId('grain'),grainSize:byId('grainSize'),
-    halation:byId('halation'),haloRadius:byId('haloRadius'),count:byId('presetCount')};
+    halation:byId('halation'),haloRadius:byId('haloRadius'),grainSharp:byId('grainSharp'),lutFile:byId('lutFile'),lutPick:byId('lutPick'),lutClear:byId('lutClear'),lutInfo:byId('lutInfo'),lutStrength:byId('lutStrength'),count:byId('presetCount')};
   const ctx=el.canvas.getContext('2d',{willReadFrequently:true,colorSpace:'srgb'});
   const state={file:null,orig:null,filtered:null,metadata:{},recipe:allRecipes[0],currentGroup:groups[0],
-    revision:0,processing:false,saving:false,original:false,debounce:0,
+    revision:0,processing:false,saving:false,original:false,debounce:0,lut:null,lutName:null,
     fitW:0,fitH:0,zoom:1,panX:0,panY:0,pointers:new Map(),pinch:null,lastTap:0,lastTapPos:null,lastTouchToggle:0};
   const number=id=>Number(el[id].value);
   const opts=()=>({strength:number('strength'),creative:el.creative.checked,p0:el.p0.checked,p1:el.p1.checked,p2:el.p2.checked,exif:el.exif.checked,
-    fx:{grain:number('grain'),grainSize:number('grainSize'),halation:number('halation'),haloRadius:number('haloRadius')}});
+    fx:{grain:number('grain'),grainSize:number('grainSize'),grainSharp:number('grainSharp'),halation:number('halation'),haloRadius:number('haloRadius')},lut:state.lut,lutStrength:number('lutStrength')});
   const getLook=r=>(el.p2.checked&&P2_LOOKS[r.id])||looks.id[r.id]||looks.group[r.group]||null;
   const getTexture=r=>P2_TEXTURES[r.id]||null;
   function updateFxHint(){const t=getTexture(state.recipe);el.fxPresetHint.textContent=t?'추천: '+t.note+' (그레인 '+t.grain+' / 입자 '+t.grainSize+' / 할레이션 '+t.halation+')':'별도 질감 추천 없음 · 현재 수동 값을 유지합니다.';}
@@ -431,7 +498,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   el.input.addEventListener('change',async e=>{const file=e.target.files?.[0];el.input.value='';if(file)await openFile(file);});
   el.stage.addEventListener('dragover',e=>{e.preventDefault();});
   el.stage.addEventListener('drop',async e=>{e.preventDefault();const file=e.dataTransfer?.files?.[0];if(file)await openFile(file);});
-  for(const id of ['strength','grain','grainSize','halation','haloRadius']){
+  for(const id of ['strength','grain','grainSize','grainSharp','halation','haloRadius','lutStrength']){
     el[id].addEventListener('input',()=>{byId(id+'Value').textContent=el[id].value+'%';requestPreview();});
   }
   el.creative.addEventListener('change',()=>{displayRecipe();requestPreview();});
@@ -442,9 +509,22 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   el.fxPresetApply.addEventListener('click',()=>{const t=getTexture(state.recipe);if(!t){setStatus('이 레시피에는 추천 질감이 없습니다. 현재 설정은 유지됩니다.');return;}
     for(const key of ['grain','grainSize','halation','haloRadius']){el[key].value=t[key];byId(key+'Value').textContent=t[key]+'%';}
     setStatus('필름 질감 추천 적용 · '+t.note);requestPreview();});
+  el.lutPick.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.lutFile.click();}});
+  el.lutFile.addEventListener('change',async()=>{
+    const file=el.lutFile.files&&el.lutFile.files[0];el.lutFile.value='';if(!file)return;
+    try{
+      if(file.size>8*1024*1024||!file.name.toLowerCase().endsWith('.cube'))throw new Error('8MB 이하의 .cube 파일만 지원합니다.');
+      const lut=processor.parseCube(await file.text());
+      state.lut=lut;state.lutName=file.name;el.lutStrength.value=100;byId('lutStrengthValue').textContent='100%';
+      el.lutInfo.textContent='적용 중: '+file.name+' / '+lut.size+'³ sRGB 3D LUT · 100%';
+      setStatus('P3 LUT 로드 완료 · '+file.name);requestPreview();
+    }catch(err){setStatus('LUT 불러오기 실패: '+err.message,true);}
+  });
+  el.lutClear.addEventListener('click',()=>{state.lut=null;state.lutName=null;el.lutStrength.value=0;byId('lutStrengthValue').textContent='0%';el.lutInfo.textContent='LUT 미적용 · 사용자가 보유한 sRGB용 .cube 파일을 불러오세요.';requestPreview();});
   el.fxToggle.addEventListener('click',()=>{const open=el.fxBody.hidden;el.fxBody.hidden=!open;el.fxArrow.textContent=open?'▴':'▾';el.fxToggle.setAttribute('aria-expanded',String(open));});
   el.reset.addEventListener('click',()=>{el.strength.value=100;el.creative.checked=true;el.p0.checked=true;el.p1.checked=true;el.p2.checked=true;
-    for(const [id,v] of Object.entries({grain:0,grainSize:30,halation:0,haloRadius:35})){el[id].value=v;byId(id+'Value').textContent=v+'%';}
+    for(const [id,v] of Object.entries({grain:0,grainSize:30,grainSharp:0,halation:0,haloRadius:35})){el[id].value=v;byId(id+'Value').textContent=v+'%';}
+    state.lut=null;state.lutName=null;el.lutStrength.value=0;byId('lutStrengthValue').textContent='0%';el.lutInfo.textContent='LUT 미적용';
     el.exif.checked=false;byId('strengthValue').textContent='100%';displayRecipe();requestPreview();});
   const emptyMeta=()=>({make:'',model:'',iso:0,wbMode:-1,lightSource:-1,flash:-1,colorSpace:-1,aperture:0,exposureSeconds:0,focalLength:0});
   // Read-only minimal JPEG EXIF TIFF parser. No external dependencies or network calls.
@@ -620,11 +700,11 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.8.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.9.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.8.0',source:'app.js'};
+  window.PRS_BOOT={state:'ready',version:'0.9.0',source:'app.js'};
   window.PRS_TEST={state,parseExif,opts,getLook,decode,openFile,P2_LOOKS,P2_TEXTURES,getTexture};
 })();
 
