@@ -1,6 +1,6 @@
 
-// Build v0.6.4: external app.js script. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.6.4',engineReady:false};
+// Build v0.7.0: external app.js script. Failure is visible rather than silently skipping filters.
+window.PRS_DIAGNOSTIC={version:'0.7.0',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -147,6 +147,47 @@ const PRSEngine = (() => {
     const br=(before>>>16&255)/255,bg=(before>>>8&255)/255,bbl=(before&255)/255,mix=skin*.30;
     return (Math.round(clamp(r*(1-mix)+br*mix)*255)<<16)|(Math.round(clamp(g*(1-mix)+bg*mix)*255)<<8)|Math.round(clamp(b*(1-mix)+bbl*mix)*255);
   }
+
+  // P1 look table: qualitative refinements based on published film descriptions, not an official LUT.
+  const P1_PROFILES = {"r009":{"name":"Fuji Velvia","legacyMix":0.94,"sat":1.05,"toe":0.12,"shoulder":0.02,"highlight":0.03,"warm":0,"magenta":0,"sector":[0.035,0.015,0.04,0.025,0.035,0],"skinProtect":0.18},"r011":{"name":"Fuji Classic Chrome","legacyMix":0.6,"sat":0.91,"toe":0.09,"shoulder":0.045,"highlight":0.055,"warm":-0.008,"magenta":0,"sector":[-0.035,-0.04,-0.055,-0.06,-0.07,-0.05],"skinProtect":0.12},"r012":{"name":"Fuji Classic Negative","legacyMix":0.7,"sat":1.01,"toe":0.14,"shoulder":0.09,"highlight":0.02,"warm":-0.015,"magenta":0.012,"sector":[0.03,0.02,-0.025,0,0,0.02],"skinProtect":0.08},"r013":{"name":"Fuji Nostalgic Negative","legacyMix":0.72,"sat":0.98,"toe":0.025,"shoulder":0.025,"highlight":0.025,"warm":0.018,"magenta":0,"sector":[0.015,0.018,-0.025,-0.02,-0.01,0],"skinProtect":0.12},"r014":{"name":"Fuji Reala Ace","legacyMix":0.54,"sat":0.97,"toe":0.02,"shoulder":-0.025,"highlight":0.075,"warm":0,"magenta":0,"sector":[-0.025,-0.025,-0.045,-0.025,-0.03,-0.03],"skinProtect":0.2},"r017":{"name":"Fuji Eterna","legacyMix":0.55,"sat":0.92,"toe":0.015,"shoulder":-0.03,"highlight":0.11,"warm":-0.007,"magenta":0,"sector":[-0.035,-0.025,-0.025,-0.02,-0.03,-0.04],"skinProtect":0.16},"r018":{"name":"Fuji Eterna Bleach Bypass","legacyMix":0.65,"sat":0.78,"toe":0.16,"shoulder":0.075,"highlight":0.045,"warm":-0.012,"magenta":0,"sector":[-0.04,-0.04,-0.04,-0.035,-0.04,-0.04],"skinProtect":0.09},"r029":{"name":"Kodak Portra 160","legacyMix":0.57,"sat":0.94,"toe":-0.015,"shoulder":-0.055,"highlight":0.075,"warm":0.018,"magenta":0,"sector":[-0.05,-0.04,-0.045,-0.055,-0.055,-0.035],"skinProtect":0.27},"r030":{"name":"Kodak Portra 400","legacyMix":0.6,"sat":0.99,"toe":0,"shoulder":-0.025,"highlight":0.075,"warm":0.017,"magenta":0,"sector":[-0.025,-0.025,-0.035,-0.035,-0.035,-0.02],"skinProtect":0.28},"r031":{"name":"Kodak Portra 800","legacyMix":0.63,"sat":0.96,"toe":-0.01,"shoulder":-0.045,"highlight":0.09,"warm":0.024,"magenta":0,"sector":[-0.025,-0.01,-0.025,-0.03,-0.03,-0.025],"skinProtect":0.26},"r032":{"name":"Kodak Gold 200","legacyMix":0.7,"sat":1.035,"toe":0.065,"shoulder":0.03,"highlight":0.065,"warm":0.024,"magenta":0,"sector":[0.035,0.03,-0.03,-0.04,-0.045,-0.005],"skinProtect":0.18},"r035":{"name":"Kodak Ektar 100","legacyMix":0.56,"sat":1.07,"toe":0.06,"shoulder":0.07,"highlight":0.035,"warm":0,"magenta":0,"sector":[0.035,0,0.055,0.04,0.055,0.015],"skinProtect":0.2},"r036":{"name":"Kodak Ektachrome E100","legacyMix":0.57,"sat":1.025,"toe":0.04,"shoulder":0.02,"highlight":0.055,"warm":-0.003,"magenta":0,"sector":[0.02,0.005,0.015,0.025,0.035,-0.01],"skinProtect":0.27},"r047":{"name":"Ricoh GR Positive","legacyMix":0.86,"sat":1.01,"toe":0.13,"shoulder":0.04,"highlight":0.035,"warm":0,"magenta":0,"sector":[0.012,-0.01,-0.01,0.02,0.025,0.015],"skinProtect":0.29},"r048":{"name":"Ricoh GR Negative","legacyMix":0.58,"sat":0.96,"toe":-0.025,"shoulder":-0.025,"highlight":0.065,"warm":0.012,"magenta":0,"sector":[-0.035,-0.035,-0.025,-0.03,-0.04,-0.03],"skinProtect":0.18},"r049":{"name":"Ricoh GR Bleach Bypass","legacyMix":0.68,"sat":0.8,"toe":0.17,"shoulder":0.08,"highlight":0.035,"warm":-0.005,"magenta":0,"sector":[-0.05,-0.05,-0.05,-0.045,-0.05,-0.05],"skinProtect":0.12},"r051":{"name":"Ricoh GR Cross Process","legacyMix":0.65,"sat":1.04,"toe":0.07,"shoulder":0.04,"highlight":0.055,"warm":-0.007,"magenta":0.008,"sector":[0.015,-0.03,0.01,0.035,0.05,0.025],"skinProtect":0.13},"r055":{"name":"Leica Contemporary","legacyMix":0.59,"sat":0.98,"toe":-0.015,"shoulder":-0.04,"highlight":0.065,"warm":0.012,"magenta":0.008,"sector":[-0.025,-0.025,-0.025,-0.025,-0.035,-0.01],"skinProtect":0.27},"r056":{"name":"Leica Classic","legacyMix":0.68,"sat":0.92,"toe":0.1,"shoulder":0.04,"highlight":0.055,"warm":0.025,"magenta":0,"sector":[-0.045,-0.04,-0.045,-0.06,-0.055,-0.04],"skinProtect":0.18},"r057":{"name":"Leica Eternal","legacyMix":0.64,"sat":1.065,"toe":0.12,"shoulder":0.095,"highlight":0.025,"warm":0.002,"magenta":0.016,"sector":[0.035,0.01,0.005,0.01,0.03,0.035],"skinProtect":0.14}};
+  function p1Finish(rgb,preCreative,sourceRgb,profile){
+    if(!profile||rgb===0||rgb===0xffffff)return rgb;
+    let r=((rgb>>>16)&255)/255,g=((rgb>>>8)&255)/255,b=(rgb&255)/255;
+    const nr=((preCreative>>>16)&255)/255,ng=((preCreative>>>8)&255)/255,nb=(preCreative&255)/255;
+    const mix=profile.legacyMix;
+    r=nr*(1-mix)+r*mix;g=ng*(1-mix)+g*mix;b=nb*(1-mix)+b*mix;
+    let y=clamp(.2126*r+.7152*g+.0722*b);
+    let y2=y;
+    if(y<.5){const t=(.5-y)/.5;y2-=profile.toe*.24*t*t*y;}
+    else{const t=(y-.5)/.5;y2-=profile.shoulder*.18*t*t*(1-y);}
+    y2+=profile.highlight*4*y*(1-y)*.032;
+    y2=clamp(y2);
+    if(y>.0001&&y2!==y){const ratio=y2/y;r*=ratio;g*=ratio;b*=ratio;}
+    y=clamp(.2126*r+.7152*g+.0722*b);
+    const peak=Math.max(r,g,b),low=Math.min(r,g,b),d=peak-low;
+    if(d>.014){
+      let h=peak===r?(g-b)/d:peak===g?2+(b-r)/d:4+(r-g)/d;if(h<0)h+=6;
+      const k=Math.floor(h),t=h-k;
+      const selective=profile.sector[k]*(1-t)+profile.sector[(k+1)%6]*t;
+      const inputR=((sourceRgb>>>16)&255)/255,inputG=((sourceRgb>>>8)&255)/255,inputB=(sourceRgb&255)/255;
+      const siMax=Math.max(inputR,inputG,inputB),siMin=Math.min(inputR,inputG,inputB),sd=siMax-siMin;
+      let sh=siMax===inputR?(inputG-inputB)/Math.max(sd,.00001):siMax===inputG?2+(inputB-inputR)/Math.max(sd,.00001):4+(inputR-inputG)/Math.max(sd,.00001);
+      if(sh<0)sh+=6;
+      const sy=.2126*inputR+.7152*inputG+.0722*inputB,ss=sd/Math.max(siMax,.0001);
+      const skin=clamp((sh-.12)/.25)*clamp((1.08-sh)/.28)*clamp((sy-.22)/.23)*clamp((.95-sy)/.22)*clamp((ss-.07)/.12)*clamp((.74-ss)/.24);
+      let gain=clamp(profile.sat+selective-profile.skinProtect*skin,.74,1.17);
+      if(gain>1){gain=1+(gain-1)*(1-.75*peak);
+        if(peak>y)gain=Math.min(gain,(1-y)/(peak-y));
+        if(low<y)gain=Math.min(gain,y/(y-low));}
+      r=clamp(y+(r-y)*gain);g=clamp(y+(g-y)*gain);b=clamp(y+(b-y)*gain);
+    }
+    const envelope=4*y*(1-y),warm=profile.warm*envelope,magenta=profile.magenta*envelope;
+    const chromaMask=clamp(d/.14);
+    r=clamp(r+(warm+magenta)*chromaMask*.22);
+    g=clamp(g-warm*chromaMask*.04-magenta*chromaMask*.10);
+    b=clamp(b-warm*chromaMask*.21+magenta*chromaMask*.14);
+    return (Math.round(r*255)<<16)|(Math.round(g*255)<<8)|Math.round(b*255);
+  }
   function pixelPacked(r0,g0,b0,p) {
     if(p.strength<=0||p.ident)return (r0<<16)|(g0<<8)|b0;
     let r=toLin[r0]*p.redGain*p.exposure,g=toLin[g0]*p.greenGain*p.exposure,b=toLin[b0]*p.blueGain*p.exposure;
@@ -171,6 +212,7 @@ const PRSEngine = (() => {
     const beforeLook=packed;
     if(p.look&&p.bw===0){packed=p.look.balancedSaturation>0?balancedFinish(packed>>>16&255,packed>>>8&255,packed&255,p):creativeFinish(packed>>>16&255,packed>>>8&255,packed&255,p);}
     if(p.p0)packed=p0SubjectGuard(packed,beforeLook,r0,g0,b0);
+    if(p.p0&&p.p1&&p.look&&p.bw===0&&p.profile)packed=p1Finish(packed,beforeLook,(r0<<16)|(g0<<8)|b0,p.profile);
     rr=packed>>>16&255;gg=packed>>>8&255;bb=packed&255;
     if(p.strength>=1)return (rr<<16)|(gg<<8)|bb;
     const inv=1-p.strength;
@@ -218,6 +260,7 @@ const PRSEngine = (() => {
   async function process(imageData,recipe,look,opts,metadata={},cancel=()=>false,report=()=>{}) {
     const w=imageData.width,h=imageData.height,source=imageData.data;
     const out=new Uint8ClampedArray(source),p=prepare(recipe,look,opts.strength/100,opts.exif,metadata,opts.p0===true);
+    p.profile=(opts.p1&&opts.p0&&look)?(P1_PROFILES[recipe.id]||null):null;p.p1=!!p.profile;
     const fx=opts.fx||{grain:0,grainSize:30,halation:0,haloRadius:35};
     // Native sharpens pixel from ORIGINAL neighbor data before color mapping.
     if(!p.ident&&p.strength>0){for(let y=0;y<h;y++){
@@ -254,7 +297,7 @@ const PRSEngine = (() => {
     report(1);
     return new ImageData(out,w,h);
   }
-  return {prepare,pixel,process,tone,noise,haloMap,sampleHalo};
+  return {prepare,pixel,process,tone,noise,haloMap,sampleHalo,p1Profiles:P1_PROFILES};
 })();
 if(typeof module!=='undefined')module.exports=PRSEngine;
 
@@ -274,7 +317,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
   const el={stage:byId('stage'),canvas:byId('photoCanvas'),placeholder:byId('placeholder'),group:byId('groupSelect'),
     list:byId('recipeList'),name:byId('recipeName'),detail:byId('recipeDetail'),reason:byId('recipeReason'),
-    strength:byId('strength'),creative:byId('creative'),p0:byId('p0'),input:byId('imageInput'),open:byId('openTop'),
+    strength:byId('strength'),creative:byId('creative'),p0:byId('p0'),p1:byId('p1'),input:byId('imageInput'),open:byId('openTop'),
     compare:byId('compareBtn'),fit:byId('fitBtn'),save:byId('saveBtn'),reset:byId('resetBtn'),
     fxToggle:byId('fxToggle'),fxBody:byId('fxBody'),fxArrow:byId('fxArrow'),status:byId('status'),
     progress:byId('progressWrap'),fill:byId('progressFill'),dims:byId('imageDims'),zoomLabel:byId('zoomLabel'),
@@ -285,7 +328,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     revision:0,processing:false,saving:false,original:false,debounce:0,
     fitW:0,fitH:0,zoom:1,panX:0,panY:0,pointers:new Map(),pinch:null,lastTap:0,lastTapPos:null,lastTouchToggle:0};
   const number=id=>Number(el[id].value);
-  const opts=()=>({strength:number('strength'),creative:el.creative.checked,p0:el.p0.checked,exif:el.exif.checked,
+  const opts=()=>({strength:number('strength'),creative:el.creative.checked,p0:el.p0.checked,p1:el.p1.checked,exif:el.exif.checked,
     fx:{grain:number('grain'),grainSize:number('grainSize'),halation:number('halation'),haloRadius:number('haloRadius')}});
   const getLook=r=>looks.id[r.id]||looks.group[r.group]||null;
   function setStatus(s,error=false){el.status.textContent=s;el.status.classList.toggle('error',error);}
@@ -295,7 +338,8 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   function displayRecipe(){const r=state.recipe,s=r.sony_settings,l=getLook(r);
     el.name.textContent=r.name;
     el.detail.textContent=`${s.picture_effect_id?'Picture Effect '+s.picture_effect_id:s.creative_style}  ·  채도 ${signed(s.saturation_steps)}  ·  대비 ${signed(s.contrast_steps)}  ·  WB ${signed(s.wb_amber_blue_steps)} / ${signed(s.wb_green_magenta_steps)}  ·  ${s.kelvin?s.kelvin+'K':'AWB'}`;
-    el.reason.textContent=r.id==='r000'?'FACTORY는 원본 유지용 레시피입니다. 색감을 적용하려면 다른 레시피를 선택하세요.':((l&&el.creative.checked)?'브랜드 보정 · '+l.rationale:'Sony 카메라 설정값 기반 근사');
+    if(el.p1.checked&&el.p0.checked&&el.creative.checked&&PRSEngine.p1Profiles[r.id]){el.reason.textContent='P1 필름 특성 · '+PRSEngine.p1Profiles[r.id].name;}
+    else el.reason.textContent=r.id==='r000'?'FACTORY는 원본 유지용 레시피입니다. 색감을 적용하려면 다른 레시피를 선택하세요.':((l&&el.creative.checked)?'브랜드 보정 · '+l.rationale:'Sony 카메라 설정값 기반 근사');
   }
   function renderRecipes(){el.list.replaceChildren();const list=allRecipes.filter(r=>r.group===state.currentGroup);
     el.count.textContent=`${list.length} / ${allRecipes.length}개`;
@@ -384,9 +428,10 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   }
   el.creative.addEventListener('change',()=>{displayRecipe();requestPreview();});
   el.p0.addEventListener('change',requestPreview);
+  el.p1.addEventListener('change',()=>{displayRecipe();requestPreview();});
   el.exif.addEventListener('change',requestPreview);
   el.fxToggle.addEventListener('click',()=>{const open=el.fxBody.hidden;el.fxBody.hidden=!open;el.fxArrow.textContent=open?'▴':'▾';el.fxToggle.setAttribute('aria-expanded',String(open));});
-  el.reset.addEventListener('click',()=>{el.strength.value=100;el.creative.checked=true;el.p0.checked=true;
+  el.reset.addEventListener('click',()=>{el.strength.value=100;el.creative.checked=true;el.p0.checked=true;el.p1.checked=true;
     for(const [id,v] of Object.entries({grain:0,grainSize:30,halation:0,haloRadius:35})){el[id].value=v;byId(id+'Value').textContent=v+'%';}
     el.exif.checked=false;byId('strengthValue').textContent='100%';displayRecipe();requestPreview();});
   const emptyMeta=()=>({make:'',model:'',iso:0,wbMode:-1,lightSource:-1,flash:-1,colorSpace:-1,aperture:0,exposureSeconds:0,focalLength:0});
@@ -563,11 +608,11 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.6.4',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.7.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.6.4',source:'app.js'};
+  window.PRS_BOOT={state:'ready',version:'0.7.0',source:'app.js'};
   window.PRS_TEST={state,parseExif,opts,getLook,decode,openFile};
 })();
 
