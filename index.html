@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#0e1117"/><meta name="description" content="Photo Recipe Studio — Sony 레시피 77개, 필름그레인과 할레이션, 미리보기 확대가 가능한 오프라인 사진 컬러 툴."/><title>Photo Recipe Studio — Web v0.6.0</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#0e1117"/><meta name="description" content="Photo Recipe Studio — Sony 레시피 77개, 필름그레인과 할레이션, 미리보기 확대가 가능한 오프라인 사진 컬러 툴."/><title>Photo Recipe Studio — Web v0.6.1</title>
 <style>:root{color-scheme:dark;--bg:#0e1117;--panel:#191e27;--panel2:#242c36;--border:#343d49;--fg:#f7f5f0;--muted:#a7b1bf;--accent:#e7b57e;--accent2:#edc79b;--mint:#7db3ac;--radius:18px}
 *{box-sizing:border-box}html,body{min-height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 system-ui,-apple-system,"Noto Sans KR",sans-serif}button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}a{color:var(--accent)}.app{max-width:1480px;margin:0 auto;padding:24px 24px 36px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.brand-title{letter-spacing:.07em;font-weight:800;font-size:clamp(19px,2.3vw,27px);line-height:1.1}.subhead{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.05em}.top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.btn{border:1px solid var(--border);background:var(--panel2);color:var(--fg);border-radius:12px;min-height:42px;padding:9px 15px;font-weight:700;transition:filter .14s,background .14s}.btn:hover{filter:brightness(1.12)}.btn.main{background:var(--accent);color:#21180f;border-color:var(--accent);box-shadow:0 5px 14px #0003}.btn.ghost{background:#252d38}.btn.tight{min-height:36px;padding:6px 12px}.btn.active{border-color:var(--accent);color:var(--accent);background:#47362a}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(335px,430px);gap:18px;align-items:start}.stage-wrap{position:sticky;top:14px;min-width:0}.stage{position:relative;height:min(78vh,780px);min-height:360px;overflow:hidden;background:#050608;border:1px solid #272b30;border-radius:17px;touch-action:none;cursor:grab;user-select:none;box-shadow:0 12px 36px #0005}.stage.dragging{cursor:grabbing}.preview-canvas{position:absolute;left:50%;top:50%;max-width:none;display:none;image-rendering:auto;will-change:transform}.placeholder{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:12px;padding:30px;color:var(--muted);pointer-events:none}.placeholder svg{margin:0 auto;opacity:.62}.placeholder strong{color:#f7f5f0;font-size:17px}.placeholder small{font-size:12px}.stage-actions{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:7px;pointer-events:none}.stage-actions>*{pointer-events:auto}.spacer{flex:1}.chip-status{background:#131820e6;border:1px solid #343a42;border-radius:8px;padding:5px 9px;color:#d9dee7;font-size:11px;backdrop-filter:blur(8px)}.help{font-size:12px;color:var(--muted);margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.controls{background:var(--panel);border:1px solid #2c3440;border-radius:21px;padding:20px;min-width:0;box-shadow:0 12px 32px #0002}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:750;font-size:15px;margin-bottom:9px}.muted{font-size:12px;color:var(--muted)}.group-select{width:100%;background:var(--panel2);color:var(--fg);border:1px solid #3a4250;border-radius:11px;padding:12px;min-height:43px;font-weight:650}.preset-count{font-size:12px;color:var(--muted)}.recipe-list{display:flex;gap:7px;flex-wrap:wrap;align-content:flex-start;max-height:155px;overflow:auto;margin:12px 0 14px;padding-bottom:2px;scrollbar-width:thin}.recipe-chip{border:1px solid #3b4551;background:#222a33;color:#dce2e8;padding:8px 11px;border-radius:9px;font-weight:550;font-size:12px;text-align:left}.recipe-chip.selected{background:#503d2b;border-color:var(--accent);color:var(--accent2)}.recipe-name{font-size:16px;font-weight:800;color:#fff}.recipe-desc{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.55}.reason{color:#abb8c5;font-size:11px;margin-top:5px;min-height:16px}.line{border:none;border-top:1px solid #37414d;margin:18px 0}.control-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.slider-block{margin-top:13px}.slider-block label{font-weight:650;font-size:12px;color:#e8edf3}.slider-value{font-size:12px;font-weight:750;color:var(--accent);font-variant-numeric:tabular-nums}input[type=range]{display:block;width:100%;accent-color:var(--accent);margin:8px 0 0;height:25px;touch-action:pan-y}.switch{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:13px;color:#d6dce3}.switch input{appearance:none;width:36px;height:21px;background:#59636e;border-radius:20px;position:relative;flex-shrink:0;cursor:pointer;transition:background .15s}.switch input:before{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#eaf1f5;transition:transform .15s}.switch input:checked{background:#488d87}.switch input:checked:before{transform:translateX(15px)}.fx-toggle{width:100%;background:#29313c;border:1px solid #3b4450;border-radius:10px;color:var(--accent);font-weight:750;padding:11px}.fx-body{padding:8px 3px 0}.fx-body[hidden]{display:none}.metadata{border:1px solid #38414b;border-radius:10px;padding:9px;color:#abb6c5;font-size:11px;white-space:pre-wrap;line-height:1.5;margin-top:9px}.actions{display:flex;gap:8px;margin-top:17px}.actions .btn{flex:1}.notice{font-size:11px;color:#98a2af;margin-top:12px;line-height:1.65}.progressbar{height:3px;background:#333b46;overflow:hidden;border-radius:4px;margin-top:12px}.progressbar i{display:block;height:100%;width:0%;background:var(--accent);transition:width .16s}.status{font-size:12px;color:#aeb8c5;margin-top:8px;min-height:20px}.status.error{color:#ffa19d}.foot{font-size:11px;color:#84909c;text-align:center;margin:20px 0 0}.pill{border:1px solid #555f69;background:#2c3540;border-radius:30px;padding:4px 9px;font-size:11px;color:#d7dee6}.hidden{display:none!important}@media(max-width:850px){.app{padding:12px 10px 22px}.layout{grid-template-columns:1fr;gap:10px}.topbar{margin-bottom:11px;padding:2px 4px}.stage-wrap{position:relative;top:auto}.stage{height:clamp(290px,53svh,610px);min-height:290px;border-radius:12px}.controls{padding:15px;border-radius:16px}.help{margin:7px 5px 3px}.brand-title{font-size:19px}.subhead{font-size:10px}.btn.main{min-height:40px;padding:8px 12px}.recipe-list{max-height:132px}.foot{padding-bottom:15px}}@media(max-width:420px){.brand-title{font-size:16px}.subhead{font-size:9px}.stage-actions{top:8px;left:8px;right:8px}.stage-actions .btn.tight{padding:5px 9px;font-size:12px}.controls{padding:13px}.recipe-chip{padding:7px 9px}}
 </style></head><body><div class="app">
   <header class="topbar">
-    <div><div class="brand-title">PHOTO RECIPE STUDIO</div><div class="subhead">SONY RECIPE · WEB v0.6.0 <span style="color:var(--accent)">/</span> GR POSITIVE TUNE</div></div>
+    <div><div class="brand-title">PHOTO RECIPE STUDIO</div><div class="subhead">SONY RECIPE · WEB v0.6.1 <span style="color:var(--accent)">/</span> GR POSITIVE TUNE</div></div>
     <div class="top-actions"><button class="btn main" id="openTop">＋ 사진 열기</button></div>
   </header>
   <main class="layout">
@@ -12,7 +12,7 @@
       <div id="stage" class="stage">
         <canvas class="preview-canvas" id="photoCanvas" aria-label="필터 사진 미리보기"></canvas>
         <div id="placeholder" class="placeholder"><svg width="62" height="62" fill="none" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="12" width="48" height="40" rx="7" stroke="currentColor" stroke-width="2"/><circle cx="21" cy="25" r="5" stroke="currentColor" stroke-width="2"/><path d="m10 43 15-12 11 9 8-7 10 10" stroke="currentColor" stroke-width="2"/></svg><strong>사진을 불러와 시작하세요</strong><span>JPG · PNG · WebP · HEIC (브라우저 지원 시)</span><small>파일은 기기에서만 처리됩니다. 서버 업로드 없음.</small></div>
-        <div class="stage-actions"><span id="zoomLabel" class="chip-status">FIT</span><div class="spacer"></div><button id="compareBtn" class="btn tight ghost" disabled>원본 보기</button><button id="fitBtn" class="btn tight ghost" disabled>Fit</button></div>
+        <div class="stage-actions"><span id="zoomLabel" class="chip-status">FIT</span><span id="viewMode" class="chip-status">사진 없음</span><div class="spacer"></div><button id="compareBtn" class="btn tight ghost" disabled>원본 보기</button><button id="fitBtn" class="btn tight ghost" disabled>Fit</button></div>
       </div>
       <div class="help"><span>핀치 · 휠 확대 / 드래그 이동 / 더블탭 확대</span><span id="imageDims">사진 없음</span></div>
     </section>
@@ -315,7 +315,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     compare:byId('compareBtn'),fit:byId('fitBtn'),save:byId('saveBtn'),reset:byId('resetBtn'),
     fxToggle:byId('fxToggle'),fxBody:byId('fxBody'),fxArrow:byId('fxArrow'),status:byId('status'),
     progress:byId('progressWrap'),fill:byId('progressFill'),dims:byId('imageDims'),zoomLabel:byId('zoomLabel'),
-    exifInfo:byId('exifInfo'),exif:byId('exif'),grain:byId('grain'),grainSize:byId('grainSize'),
+    exifInfo:byId('exifInfo'),exif:byId('exif'),viewMode:byId('viewMode'),grain:byId('grain'),grainSize:byId('grainSize'),
     halation:byId('halation'),haloRadius:byId('haloRadius'),count:byId('presetCount')};
   const ctx=el.canvas.getContext('2d',{willReadFrequently:true,colorSpace:'srgb'});
   const state={file:null,orig:null,filtered:null,metadata:{},recipe:allRecipes[0],currentGroup:groups[0],
@@ -326,12 +326,13 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     fx:{grain:number('grain'),grainSize:number('grainSize'),halation:number('halation'),haloRadius:number('haloRadius')}});
   const getLook=r=>looks.id[r.id]||looks.group[r.group]||null;
   function setStatus(s,error=false){el.status.textContent=s;el.status.classList.toggle('error',error);}
+  function viewBadge(){el.viewMode.textContent=!state.orig?'사진 없음':state.original?'원본 표시 중':'보정 미리보기';el.viewMode.style.borderColor=state.original?'#e7b57e':'#488d87';}
   function progress(p){const n=Math.round(clamp(p,0,1)*100);el.fill.style.width=n+'%';el.progress.setAttribute('aria-valuenow',String(n));}
   function signed(v){return v>0?'+'+v:String(v);}
   function displayRecipe(){const r=state.recipe,s=r.sony_settings,l=getLook(r);
     el.name.textContent=r.name;
     el.detail.textContent=`${s.picture_effect_id?'Picture Effect '+s.picture_effect_id:s.creative_style}  ·  채도 ${signed(s.saturation_steps)}  ·  대비 ${signed(s.contrast_steps)}  ·  WB ${signed(s.wb_amber_blue_steps)} / ${signed(s.wb_green_magenta_steps)}  ·  ${s.kelvin?s.kelvin+'K':'AWB'}`;
-    el.reason.textContent=(l&&el.creative.checked)?'브랜드 보정 · '+l.rationale:'Sony 카메라 설정값 기반 근사';
+    el.reason.textContent=r.id==='r000'?'FACTORY는 원본 유지용 레시피입니다. 색감을 적용하려면 다른 레시피를 선택하세요.':((l&&el.creative.checked)?'브랜드 보정 · '+l.rationale:'Sony 카메라 설정값 기반 근사');
   }
   function renderRecipes(){el.list.replaceChildren();const list=allRecipes.filter(r=>r.group===state.currentGroup);
     el.count.textContent=`${list.length} / ${allRecipes.length}개`;
@@ -349,7 +350,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     if(el.canvas.width!==data.width||el.canvas.height!==data.height){el.canvas.width=data.width;el.canvas.height=data.height;resetZoom=true;}
     ctx.putImageData(data,0,0);el.canvas.style.display='block';
     el.placeholder.classList.add('hidden');
-    updateFit(resetZoom);
+    updateFit(resetZoom);viewBadge();
   }
   function currentData(){return state.original||!state.filtered?state.orig:state.filtered;}
   function updateFit(reset=false){if(!state.orig)return;
@@ -406,7 +407,8 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   el.fit.addEventListener('click',()=>updateFit(true));
   new ResizeObserver(()=>{if(state.orig)updateFit();}).observe(el.stage);
   el.compare.addEventListener('click',()=>{if(!state.orig)return;state.original=!state.original;
-    el.compare.textContent=state.original?'보정 보기':'원본 보기';el.compare.classList.toggle('active',state.original);present(currentData());});
+    el.compare.textContent=state.original?'보정 보기':'원본 보기';el.compare.classList.toggle('active',state.original);present(currentData());
+    setStatus(state.original?'원본 표시 중 · 보정 화면으로 돌아가려면 보정 보기를 누르세요.':'보정 미리보기 표시 중');});
   el.open.addEventListener('click',()=>el.input.click());
   el.input.addEventListener('change',async e=>{const file=e.target.files?.[0];if(file)await openFile(file);el.input.value='';});
   el.stage.addEventListener('dragover',e=>{e.preventDefault();});
@@ -506,7 +508,15 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   }
   function requestPreview(){const rev=++state.revision;clearTimeout(state.debounce);
     if(!state.orig)return;
+    // Exit original-comparison view on every edit so processed output is actually shown.
+    if(state.original){state.original=false;el.compare.textContent='원본 보기';el.compare.classList.remove('active');viewBadge();}
     state.debounce=setTimeout(()=>runPreview(rev),110);
+  }
+  function comparePixels(original,filtered){
+    const a=original.data,b=filtered.data;let total=0,count=0;
+    const step=Math.max(1,Math.floor(original.width*original.height/3000));
+    for(let p=0;p<a.length/4;p+=step){const i=p*4;total+=Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2]);count++;}
+    return count?total/(3*count):0;
   }
   async function runPreview(rev){if(rev!==state.revision||!state.orig)return;
     const recipe=state.recipe,look=opts().creative?getLook(recipe):null,config=opts(),meta={...state.metadata};
@@ -514,7 +524,9 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     try{const result=await PRSEngine.process(state.orig,recipe,look,config,meta,()=>rev!==state.revision,p=>{if(rev===state.revision)progress(p);});
       if(!result||rev!==state.revision)return;
       state.filtered=result;if(!state.original)present(result);
-      setStatus('미리보기 · '+recipe.name+(look?' · 브랜드 특성':' · Sony 기본값'));progress(0);
+      const delta=comparePixels(state.orig,result);
+      const tail=delta<.12?(recipe.id==='r000'?'FACTORY 원본 유지':config.strength===0?'필터 강도 0% · 원본 유지':'원본과 변화가 거의 없음'):'평균 RGB 변화 '+delta.toFixed(1)+'/255';
+      setStatus('보정 미리보기 · '+recipe.name+' · '+tail);progress(0);
     }catch(e){if(rev===state.revision){setStatus('미리보기 처리 오류: '+e.message,true);progress(0);}}
   }
   function canvasBlob(c){return new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(new Error('JPG 변환 실패')),'image/jpeg',.95));}
