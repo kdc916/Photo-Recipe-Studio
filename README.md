@@ -1,23 +1,25 @@
-# Photo Recipe Studio WEB v0.9.0 — P3 LUT & Grain Sharpness
+# Photo Recipe Studio WEB v0.10.0 — P4 HEIC & Grain Sharpness
 
-Offline-first photo editor with 77 original Sony Recipe Lab recipes, 12 categories, P0/P1/P2, EXIF, grain, halation, zoom/Fit and JPG export.
+## What's fixed
+- **Grain Sharpness 100% softening**: removed subtractive coarse-grain term. Sharpening now adds fine-grain detail while preserving coarse grain. Grain Sharpness 0% matches v0.9.0 and the underlying photo is never edge-sharpened.
+- **Mobile HEIC/HEIF**: try the browser's native decoder first; if it fails, lazily load the **local** `vendor/heic2any.min.js` HEIC-to-JPG decoder. Photos never leave the device. JPEG cache is reused for preview and JPG export; no duplicate HEIC conversion.
+- HEIC decode errors are reported, existing good photo remains and retry remains available. Some 10-bit/HDR and very high-resolution HEIC profiles may still be unsupported or run out of browser memory.
 
-## P3 additions
-- Import a user-supplied **sRGB 3D .cube LUT**, supported sizes 2–65, optional DOMAIN_MIN/MAX, trilinear interpolation. Apply 0–100% or Clear. LUT is held in local browser memory, never uploaded. Order: film color → optional LUT → grain/halation.
-- New **그레인 샤픈** slider 0–100% changes the high-frequency detail of film grain **only**, not photo edge sharpening. At 0% it is identical to v0.8.0; grain intensity must be >0 to see a difference.
-- Opt-in existing P2 texture suggestions (47 recipes) are preserved and don't overwrite Grain Sharpness. P3 LUT is disabled by default.
+## Installation
+GitHub Pages repository root must contain `index.html`, `app.js`, `.nojekyll` and **`vendor/heic2any.min.js`**. The official GitHub **Code → Download ZIP** contains the decoder file. The smaller source-only ZIP provided in chat is **not** a complete offline HEIC package.
 
-## Deploy
-Put `index.html`, `app.js` and `.nojekyll` in the repository root. Settings → Pages → Deploy from a branch → main → /(root).
+Live app: https://kdc916.github.io/Photo-Recipe-Studio/?v=0.10.0
 
-App: https://kdc916.github.io/Photo-Recipe-Studio/?v=0.9.0
+## Compatibility
+- Browsers can work with JPEG, PNG and WebP without loading the HEIC library.
+- HEIC fallback converts to local JPG quality 96%. Some HEIC EXIF/ICC/HDR metadata may not survive this conversion. The original user file is not overwritten.
+- Android APK continues to use native Android ImageDecoder for HEIC; this JavaScript fallback applies to **web browsers**, not the Android APK.
 
 ## QA
-- 77 recipes × 221 input pixels: **17,017 pixel cases exact** compared with v0.8.0 when P3 is off.
-- Java/JavaScript LUT: **500 sampled cases** with max channel difference 1/255.
-- Chromium desktop 1400px and mobile 390px: image import, LUT load/clear/strength, grain sharp 0→88, JPG save and zero JS runtime errors.
-- Android Java smoke: 77 recipes (20,097 cases), Film FX, P3 LUT/grain sharp tests pass. Actual Gradle APK compilation and phone install not verified.
+- Java 77 recipe regression and grain high-frequency increase test PASS.
+- Chromium desktop (1440px) / mobile viewport (390px): open photos, grain sharp 0–100, HEIC failure + **mocked** local decoder, cached JPG export and retry recovery PASS.
+- **Actual HEVC real-file decoding on mobile not verified yet**. Need user device testing with real files. Windows Android APK compilation not performed here.
 
-Not an official film or camera LUT. P3 currently **imports calibration LUTs**, but does **not** auto-detect ColorChecker, generate measured LUTs, compute ΔE2000, or change RAW/Log color space.
+All v0.9.0 color coefficients/P0–P3, film FX, .cube LUT, 12 groups and 77 source recipes retained.
 
-See HANDOFF_v0.9.0_WEB.md, QA_REPORT_WEB_v0.9.0.md and P3_LUT_GUIDE.md.
+See `HANDOFF_v0.10.0_WEB.md`, `QA_REPORT_WEB_v0.10.0.md`, `THIRD_PARTY_NOTICES.md`.
