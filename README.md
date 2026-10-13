@@ -1,28 +1,31 @@
-# Photo Recipe Studio v0.11.0 — P5 Mobile Workflow & Grain Reset
+# Photo Recipe Studio WEB v0.14.0 (P6 + P7 + P8)
 
-Web photo editor with **77 original Sony Recipe Lab recipes / 12 categories**, P0/P1/P2 color looks, P3 calibration LUT, film grain/halation, zoom/Fit, EXIF, offline HEIC fallback and JPG export. Original Sony source values and color algorithms unchanged in P5.
+Stable basis: 77 original Sony recipes, 12 groups, P0-P5 color, local HEIC fallback and compact mobile workflow.
 
-## P5: Grain resets on a different recipe
-- On selecting a **different recipe ID** (including changing company/category), clear **Grain Strength 0%, Grain Size 30%, Grain Sharpness 0%**.
-- Re-selecting the **same** recipe, changing image, adjusting strength or toggling P0/P1/P2 does **not** reset grain.
-- Halation (strength/radius), EXIF hints and imported .cube LUT settings remain untouched.
-- A new **그레인 초기화** button manually clears just the three grain sliders.
-- Film texture recommendations still apply **only** when the user explicitly presses the preset button.
+## P6 quality export
+- JPEG quality 70-100%, selected 12MP/20MP/preview/original with memory safety cap.
+- Optional JPEG + edit-settings JSON sidecar ZIP. Canvas output is sRGB; original ICC and EXIF are NOT reembedded.
 
-## P5: Less mobile scrolling
-- Photo preview stays in view as a **sticky** upper area with a 34svh height (190–320 px).
-- Recipe chips are a horizontal single-row swipe list.
-- Filter strength is immediately accessible; advanced Brand/P0/P1/P2/LUT controls and recipe details collapse by default on mobile.
-- Save/reset actions remain sticky near the mobile bottom. Desktop advanced controls stay expanded.
-- Native Android app also collapses its four advanced switches and resets grain on real recipe changes.
+## P7 reference color calibration
+- CSV 6-96 matching sRGB observed/target RGB pairs, CIEDE2000 TRAINING delta-E and fitted 17x17x17 .cube LUT.
+- Training fit is not independently verified camera/film accuracy; measured chart/reference and held-out scenes are needed.
 
-## GitHub Pages
-Place `index.html`, `app.js`, `.nojekyll`, and **`vendor/heic2any.min.js`** in repository root / vendor subfolder. GitHub Pages: main / (root).
-Live: https://kdc916.github.io/Photo-Recipe-Studio/?v=0.11.0
+## P8 pro editing
+- Split original/filtered compare, up to 30 step parameter Undo/Redo, favorites, named custom recipes with JSON backup.
+- Batch up to 10 photos to one ZIP of JPG images using current recipe (3/8/12MP per photo).
 
-For a complete offline HEIC web archive use **Code → Download ZIP** from the official repository. Source-only ZIP and standalone HTML distributed separately do NOT contain the 1.35MB local HEIC decoder, so JPEG/PNG/WebP work but HEIC fallback is not available in these source-only files.
+## Deployment
+Root files: index.html + app.js + extension.js + .nojekyll and vendor/heic2any.min.js.
+Live page: https://kdc916.github.io/Photo-Recipe-Studio/?v=0.14.0
+Download full repo for offline HEIC binary: https://github.com/kdc916/Photo-Recipe-Studio/archive/refs/heads/main.zip
+
+## Android
+Android companion source includes output size/JPEG quality, reference CSV->LUT, basic native Undo/Redo/favorites/one custom recipe and gallery batch save. Android native does not yet support the web split slider, ZIP batch or multi-custom JSON.
+Android SDK compilation/device test not verified.
 
 ## QA
-Chromium 1440×900, 390×844, 360×740: real JPEG import, recipe-change grain reset, same-recipe retention, halation retention, manual reset, compact mobile layout, JPG export, 0 JavaScript errors — PASS.
-Android Java ColorEngine/FilmFx/LUT tests: 77 recipes / 20,097 sample cases PASS. Full Android Gradle build and real phone verification are not completed.
-See HANDOFF_v0.11.0_WEB.md and QA_REPORT_WEB_v0.11.0.md.
+Chromium injected-script tests desktop+mobile: photo load, 2800x1800 original output, quality, LUT fitting, split, history/custom and batch ZIP PASS.
+Java regression 77 recipes / 20,097 RGB inputs and ReferenceCalibrator PASS.
+GitHub Pages Actions deployment succeeded; real live browser HTTP access was blocked in test environment.
+
+Read HANDOFF_v0.14.0_WEB.md, QA_REPORT_WEB_v0.14.0.md, and P7_CSV_GUIDE.md.
