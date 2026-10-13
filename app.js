@@ -1,6 +1,6 @@
 
-// Build v0.9.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.9.0',engineReady:false};
+// Build v0.10.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
+window.PRS_DIAGNOSTIC={version:'0.10.0',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -357,7 +357,7 @@ const PRSEngine = (() => {
             const amp=.105*(fx.grain/100)*grainScale*env;
             const n=noise(x,y,w,h,fx.grainSize,0x51f0a),hf=noise(x,y,w,h,Math.max(0,Math.floor(fx.grainSize/2)),0x129ab);
             const base=n*.8+hf*.2;
-            const edge=(hf-n)*.50*((fx.grainSharp||0)/100);
+            const edge=hf*.85*((fx.grainSharp||0)/100);
             const d=amp*(base+edge);r+=d;g+=d;b+=d;}
           out[i]=Math.round(clamp(r)*255);out[i+1]=Math.round(clamp(g)*255);out[i+2]=Math.round(clamp(b)*255);
         }
@@ -625,6 +625,37 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
       URL.revokeObjectURL(url);
     }
   }
+  function isHeicFile(file){
+  return /\.(heic|heif)$/i.test(file.name||'') || /image\/(heic|heif|heic-sequence|heif-sequence)/i.test(file.type||'');
+}
+  function loadHeicDecoder(){
+  if(typeof window.heic2any==='function')return Promise.resolve(window.heic2any);
+  if(loadHeicDecoder.pending)return loadHeicDecoder.pending;
+  loadHeicDecoder.pending=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='./vendor/heic2any.min.js?v=0.10.0';script.async=true;
+    script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC 디코더 초기화 실패'));
+    script.onerror=()=>reject(new Error('HEIC 디코더 파일을 불러올 수 없습니다.'));
+    document.head.appendChild(script);
+  }).catch(e=>{loadHeicDecoder.pending=null;throw e;});
+  return loadHeicDecoder.pending;
+}
+  async function decodeWithHeicFallback(file,maxPixels){
+  try{return {decoded:await decode(file,maxPixels),file,converted:false};}
+  catch(nativeError){
+    if(!isHeicFile(file))throw nativeError;
+    setStatus('HEIC 보조 디코더 준비 중 · 사진은 기기 안에서 처리됩니다.');
+    const converter=await loadHeicDecoder();
+    setStatus('HEIC 변환 중 · 고해상도 사진은 시간이 걸릴 수 있습니다.');
+    let output;
+    try{output=await converter({blob:file,toType:'image/jpeg',quality:.96});}
+    catch(e){throw new Error('HEIC 변환 실패: '+(e&&e.message||String(e))+' · 일부 10-bit/HDR HEIC는 미지원일 수 있습니다.');}
+    const converted=Array.isArray(output)?output[0]:output;
+    if(!(converted instanceof Blob)||!converted.size)throw new Error('HEIC 변환 파일이 비어 있습니다.');
+    const usable=new File([converted],file.name.replace(/\.(heic|heif)$/i,'.jpg'),{type:'image/jpeg'});
+    return {decoded:await decode(usable,maxPixels),file:usable,converted:true};
+  }
+}
   async function openFile(file){
     if(state.saving){setStatus('저장 처리가 끝난 후 새 사진을 열어주세요.',true);return;}
     if(!file||(!file.type.startsWith('image/')&&!/\.(heic|heif|jpg|jpeg|png|webp|avif)$/i.test(file.name))){
@@ -635,9 +666,9 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     setDisabled(true);
     setStatus('사진 디코딩 중… '+file.name);progress(.05);
     try{
-      const [meta,decoded]=await Promise.all([extractMetadata(file),decode(file,1800*1800)]);
+      const [meta,loaded]=await Promise.all([extractMetadata(file),decodeWithHeicFallback(file,1800*1800)]);const decoded=loaded.decoded;
       if(ticket!==state.revision)return;
-      state.file=file;state.metadata=meta;state.orig=decoded.data;state.filtered=null;
+      state.file=file;state.decodeFile=loaded.file;state.heicConverted=loaded.converted;state.metadata=meta;state.orig=decoded.data;state.filtered=null;
       state.original=false;state.origDims=[decoded.originalWidth,decoded.originalHeight];
       el.compare.textContent='원본 보기';el.compare.classList.remove('active');
       el.exifInfo.textContent=metaDisplay(meta);
@@ -682,7 +713,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   el.save.addEventListener('click',async()=>{if(!state.file||state.saving)return;
     const file=state.file,recipe=state.recipe,config=opts(),look=config.creative?getLook(recipe):null,meta={...state.metadata};
     state.saving=true;setDisabled(true);setStatus('원본 해상도로 JPG 준비 중…');progress(.02);
-    try{const decoded=await decode(file,20_000_000);
+    try{const decoded=await decode(state.decodeFile||file,20_000_000);
       const result=await processor.process(decoded.data,recipe,look,config,meta,()=>false,p=>progress(p));
       const temp=document.createElement('canvas');temp.width=result.width;temp.height=result.height;
       temp.getContext('2d',{colorSpace:'srgb'}).putImageData(result,0,0);
@@ -700,11 +731,11 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.9.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.10.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.9.0',source:'app.js'};
-  window.PRS_TEST={state,parseExif,opts,getLook,decode,openFile,P2_LOOKS,P2_TEXTURES,getTexture};
+  window.PRS_BOOT={state:'ready',version:'0.10.0',source:'app.js'};
+  window.PRS_TEST={state,parseExif,opts,getLook,decode,openFile,decodeWithHeicFallback,isHeicFile,loadHeicDecoder,P2_LOOKS,P2_TEXTURES,getTexture};
 })();
 
