@@ -23,3 +23,7 @@ GitHub Pages / 로컬 정적 서버 사진 보정 앱. 기존 77개 Sony Recipe 
 Chromium에서 PC / 모바일 각각 독립형 HTML 및 외부 app.js 모의 로드로 전체 테스트: 12개 카테고리, 파일선택/재시도, 8192×5464 JPG 로드, Fuji Velvia RGB 변화, Ricoh GR Hard Monotone 완전 흑백, JPG 저장 모두 통과. JS pageerror 0건. 고장난 JS를 제공할 때 초기화 실패 메시지 표시됨.
 
 **검증 한계:** GitHub Pages 원격 서버가 새 스크립트를 실제로 제공하는지와 사용자 PC에서 문제가 사라졌는지는 직접 검증하지 못함.
+## 확인된 실제 오류 원인
+
+이전 v0.6.3에서는 로컬 테스트 파일과 GitHub에 업로드된 실제 스크립트가 달랐습니다. GitHub 버전의 `p0SubjectGuard()` 반환식 두 곳에 여분의 여는 괄호가 있어 `SyntaxError: Unexpected token ;`가 발생했습니다. 이 경우 **레시피 목록과 사진 선택 이벤트 모두 초기화되지 않습니다.** 해당 괄호를 수정하고, GitHub에서 실제 파일을 다시 받아 JavaScript 구문 검사를 통과했습니다.
+
