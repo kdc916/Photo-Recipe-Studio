@@ -1,11 +1,21 @@
-# Photo Recipe Studio Web v0.5.2
+# Photo Recipe Studio — Web v0.6.0 (P0 Color Stability)
 
-Offline GitHub Pages photo editor with 77 original Sony recipes, film grain/halation, EXIF and preview zoom.
+GitHub Pages-ready, offline-first photo color application based on 77 Sony Recipe Lab camera-setting recipes. This is an **approximation**, not an official manufacturer LUT.
 
-## v0.5.2
-- Velvia and GR Positive Film no longer multiply stacked saturation coefficients.
-- Velvia: modestly richer primary colors and controlled skin; GR Positive: moderate overall color, detailed deep shadows, clear warm midtones.
-- JPEG clipping protection on vivid primaries; 0% remains original, 50% blends the same result.
-- Original camera recipe settings preserved unchanged.
+## P0 changes
+- **P0 색상 보호** switch (default ON). OFF restores the previous v0.5.2 processing path for A/B testing.
+- Stops stacking high saturation in linear RGB for all 77 recipes while P0 is enabled. Instead uses bounded, gamut-aware chroma after tone mapping in display-referred sRGB.
+- Preserves the ratio of linear RGB channels when highlights exceed 1.0, instead of clipping each channel independently.
+- Softens additional brand vibrance and hue-sector amplification in P0.
+- Guards nearly neutral RGB regions and warm/orange midtones. These are *color heuristics, not face recognition*.
+- Retains source 77 recipes, 12 categories, Film Grain, Halation, EXIF, zoom/Fit and JPG export.
 
-Deploy `index.html` and the files in this folder to the repository root (`main` / `/(root)`). No backend, npm or external CDN required. For full QA limitations, see `HANDOFF_v0.5.2_WEB.md`.
+## GitHub Pages
+Source: **Deploy from a branch**; Branch: **main**; Folder: **/(root)**. No server or CDN.
+
+## Verification
+- **10,164 / 10,164** Android Java ↔ web JavaScript sample RGB cases match (maximum channel difference 0).
+- Legacy Java regression, 77-recipe sweep (20,097 sample pixels), and dedicated P0 invariants pass.
+- Actual APK build, browser visual checks, calibrated reference measurements and ΔE are **not verified** in this environment. Local browser navigation was blocked by environment restrictions.
+
+See `HANDOFF_v0.6.0_WEB.md` and `QA_REPORT_WEB_v0.6.0.md`.
