@@ -1,19 +1,19 @@
-# Photo Recipe Studio WEB v0.6.1 — Preview Fix
+# Photo Recipe Studio WEB v0.6.2 — Engine Runtime Restore
 
-Offline single-file photo recipe tool using 77 original Sony camera setting recipes (approximation, not manufacturer LUT).
+## Fixed: no color change on GitHub Pages
+The user supplied real screenshots of v0.6.1 showing `미리보기 처리 오류: PRSEngine is not defined` when trying FACTORY, Velvia, Ricoh GR Positive and GR Hard Monotone. This means filtering was **not running**, even though UI and the original image loaded correctly. The exact remote loading trigger was not reproduced locally.
 
-## Fix: 'color unchanged'
-- **FACTORY (ST)** is an identity preset; by design it leaves RGB unchanged even at 100% strength.
-- Previously, if **원본 보기** was enabled, changing recipes/strength/P0 still recalculated output but kept showing the original image. Now editing automatically exits original comparison mode.
-- An explicit **원본 표시 중 / 보정 미리보기** badge identifies which image is displayed.
-- Preview status displays sampled **mean absolute RGB difference / 255** relative to the source image. It is a magnitude diagnostic, **not Delta-E accuracy**, not a quality score.
-- P0 protects color from clipping and extra chroma. It does not create a new film look. For Velvia and Ricoh Positive the ON/OFF difference is deliberately tiny because both already use a balanced processing branch.
+v0.6.2 bundles recipe data, `PRSEngine`, and UI code into **one inline script**; preview and JPG export share that initialized processor. At startup `window.PRS_DIAGNOSTIC` checks Factory RGB identity and B&W neutrality and reports `컬러 엔진 준비 완료` when healthy. Uncaught JS errors are visible in status.
 
-## Test
-Headless Chromium with a real JPEG passed: Factory unchanged, Fuji Velvia and Ricoh GR Positive both altered pixels, and toggling original then changing recipe/P0/strength returned to processed view. Java engine smoke, grayscale and 77-recipe regression tests pass.
+Also fixed a separate problem: Ricoh GR group fallback color finishing was tinting black-and-white looks. Monochrome processing now skips chromatic brand finishing.
 
-## Deployment
-GitHub Pages: main / (root). If cached, use hard-refresh or `?v=0.6.1`. No external script/CDN needed. All processing occurs in the browser.
+## Confirm the repair
+Open **https://kdc916.github.io/Photo-Recipe-Studio/?v=0.6.2**. Hard-refresh (Ctrl+Shift+R) if an older version is cached. Check for the startup status `컬러 엔진 준비 완료`, then load a JPEG and choose Fuji Velvia, Ricoh GR Positive, and Ricoh GR Hard Monotone. The first two should show nonzero RGB change; the last must display true grayscale.
 
-## Caveat
-No new color coefficients were added in v0.6.1. Native Android APK build and manufacturer ΔE calibration are unverified here.
+## QA
+In headless Chromium with a real JPEG input: Factory unchanged, Velvia mean RGB delta 3.9/255, GR Positive 8.2/255, GR Hard Monotone 884,736/884,736 gray pixels, JPG export successful, no JS errors. Android Java smoke + monochrome regression passed. These values depend on the test photo and are not camera LUT calibration. Real public Pages rendering and Android device builds have not been verified from this environment.
+
+## Features
+77 source presets / 12 categories; P0 color safety ON/OFF; brand-character toggle; image zoom and Fit; compare original; film grain; halation; EXIF hints; JPG save. Offline processing with no external library/backend.
+
+Build v0.6.2 | GitHub Pages main / (root).
