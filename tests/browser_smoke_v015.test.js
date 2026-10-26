@@ -10,8 +10,8 @@ const server=http.createServer((req,res)=>{
  const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
  const p=path.resolve(root,'.'+pathname.replace(/\/$/,'/index.html'));
  if(!p.startsWith(root+path.sep)){res.writeHead(403);res.end();return;}
- try{res.writeHead(200,{'content-type':mime[path.extname(p)]||'application/octet-stream','cache-control':'no-store'});res.end(fs.readFileSync(p));}
- catch(e){res.writeHead(404);res.end(e.message);}
+ try{const data=fs.readFileSync(p);res.writeHead(200,{'content-type':mime[path.extname(p)]||'application/octet-stream','cache-control':'no-store'});res.end(data);}
+ catch(e){if(!res.headersSent)res.writeHead(404);res.end(e.message);}
 });
 const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chrome/chrome'];
 (async()=>{
@@ -63,9 +63,10 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
    await page.locator('#lookSlotLoad').click();
    assert.equal(await page.locator('#creativeContrast').inputValue(),'9');
    await page.locator('#professionalTools').evaluate(el=>el.open=true);
+   const customPromise=page.waitForEvent('download',{timeout:15000});
    await page.locator('#customExport').click();
-   const customDownload=await page.waitForEvent('download',{timeout:15000}).catch(()=>null);
-   if(customDownload)assert.ok(customDownload.suggestedFilename().endsWith('.json'));
+   const customDownload=await customPromise;
+   assert.ok(customDownload.suggestedFilename().endsWith('.json'));
    const downloadPromise=page.waitForEvent('download');
    await page.locator('#saveBtn').click();
    const result=await downloadPromise;
