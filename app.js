@@ -21,11 +21,11 @@ const PRS_V015_ADDED = (() => {
     implementation_note:reference+' - independent display-referred interpretation; no proprietary LUT or DCP embedded.'
   });
   return [
-    make('r077','Sony',0,'Sony FL2 (approx.)','Sony FL2 published look characteristics'),
-    make('r078','Sony',0,'Sony FL3 (approx.)','Sony FL3 published look characteristics'),
+    make('r077','Sony',0,'Sony FL2 (reference match)','Sony FL2 published look characteristics'),
+    make('r078','Sony',0,'Sony FL3 (reference match)','Sony FL3 published look characteristics'),
     make('r079','Ricoh GR',5,'GR Standard (approx.)','Ricoh GR Standard intent'),
     make('r080','Ricoh GR',5,'GR Vivid (approx.)','Ricoh GR Vivid intent'),
-    make('r081','Sony',0,'Sony FL1 (measured reference)','Sony ILCE-7M5 FL1 same-scene reference')
+    make('r081','Sony',0,'Sony FL1 (reference match)','Sony ILCE-7M5 FL1 same-scene reference')
   ];
 })();
 const PRS_V015_LOOKS={

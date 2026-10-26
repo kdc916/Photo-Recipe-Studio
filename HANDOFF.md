@@ -30,3 +30,6 @@ Former version-specific `HANDOFF_v*.md` and `QA_REPORT_WEB_v*.md` root notes hav
 - Six user slots are stored locally under `prs-v015-look-slots` with only JSON-serializable controls (no binary LUT). The existing P8 custom/favorite localStorage keys are preserved. `PRS_CUSTOM_V2` import/export carries custom and 6 slots, and can still import `PRS_CUSTOM_V1`.
 - Controls use mobile responsive 1-column layout and collapsed details, with sensible defaults for restored v0.14 recipes.
 - The reference A7CR research source is unofficial and camera-specific. Its noncommercial/third-party licenses are not imported. Lens/camera vendor color fidelity requires measured comparisons and permission for bundled proprietary color profiles.
+
+## v0.15.1 (2026-10-26) FL reference calibration
+77 original PMCA recipes unchanged; +1 Sony FL1 r081, FL2 r077 and FL3 r078 use independently fitted 33-cube color transforms from four user ILCE-7M5 JPEGs; 82 total. Standard Display P3 and FL sRGB were color-managed before alignment, robust cubic regression and color LUT construction. Source photos are NOT committed. In-sample aligned scene RGB MAE before→after: FL1 29.55→3.87; FL2 21.03→1.85; FL3 23.38→2.55 per 255. Not independent validation. See FL_REFERENCE_CALIBRATION.md. Existing P9 8 controls, 6 slots, P8 JSON V1/V2 support and batch/export remain intact.

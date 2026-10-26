@@ -13,9 +13,9 @@ const ctx={window:{addEventListener(){}},document:{getElementById(){return null;
 vm.runInNewContext(app.slice(0,app.indexOf('/* Web app UI'))+'\n;globalThis.__core={PRS_SOURCE,PRS_V015_ADDED,PRS_V015_LOOKS,PRSEngine};',ctx);
 const {PRS_SOURCE,PRS_V015_ADDED,PRS_V015_LOOKS,PRSEngine}=ctx.__core;
 const legacy=PRS_SOURCE.recipes,extra=PRS_V015_ADDED,looks=PRS_V015_LOOKS,engine=PRSEngine;
-assert.equal(legacy.length,77);assert.equal(extra.length,4);
-assert.deepEqual(Array.from(extra,r=>r.id),['r077','r078','r079','r080']);
-assert.equal(new Set([...legacy,...extra].map(r=>r.id)).size,81);
+assert.equal(legacy.length,77);assert.equal(extra.length,5);
+assert.deepEqual(Array.from(extra,r=>r.id),['r077','r078','r079','r080','r081']);
+assert.equal(new Set([...legacy,...extra].map(r=>r.id)).size,82);
 assert.equal(legacy.find(x=>x.id==='r000').name,'FACTORY (ST)');
 assert.ok(html.includes('id="lookSlots"'));
 for(const id of ['creativeContrast','creativeHighlights','creativeShadows','creativeFade','creativeSaturation','creativeSharpness','creativeSharpnessRange','creativeClarity']){
@@ -35,7 +35,7 @@ const empty={contrast:0,highlights:0,shadows:0,fade:0,saturation:0,sharpness:3,s
  }
  const zero=await engine.process(input,legacy[0],null,{...config,strength:0,creativeTune:{...empty,contrast:9,sharpness:9,clarity:9}});
  assert.deepEqual(Array.from(zero.data),Array.from(input.data),'strength zero must preserve source');
- const f2=await engine.process(input,extra[0],looks.r077,config),f3=await engine.process(input,extra[1],looks.r078,config);
+ const f2=await engine.process(input,extra[0],null,config),f3=await engine.process(input,extra[1],null,config);
  assert.notDeepEqual(Array.from(f2.data),Array.from(f3.data),'FL2 and FL3 must differ');
  const dim=4,w=8,h=8,grid=new Uint8ClampedArray(w*h*dim);
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;grid[i]=x*30;grid[i+1]=y*30;grid[i+2]=(x+y)*14;grid[i+3]=255;}

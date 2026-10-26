@@ -26,8 +26,8 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
    const page=await ctx.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load'});
-   await page.waitForFunction(()=>window.PRS_BOOT?.state==='ready'&&window.PRS_EXTENSION?.version==='0.15.0');
-   assert.equal(await page.evaluate(()=>window.PRS_TEST.allRecipes.length),81);
+   await page.waitForFunction(()=>window.PRS_BOOT?.state==='ready'&&window.PRS_EXTENSION?.version==='0.15.1');
+   assert.equal(await page.evaluate(()=>window.PRS_TEST.allRecipes.length),82);
    const png=await page.evaluate(async()=>{
     const canvas=document.createElement('canvas');canvas.width=240;canvas.height=150;
     const c=canvas.getContext('2d');const grd=c.createLinearGradient(0,0,240,150);
@@ -38,7 +38,7 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
    await page.locator('#imageInput').setInputFiles({name:'qa.png',mimeType:'image/png',buffer:image});
    await page.waitForFunction(()=>window.PRS_TEST.state.filtered?.width===240,{timeout:20000});
    await page.locator('#groupSelect').selectOption('Sony');
-   await page.getByRole('button',{name:'Sony FL2 (approx.)'}).click();
+   await page.getByRole('button',{name:'Sony FL2 (reference match)'}).click();
    await page.waitForFunction(()=>window.PRS_TEST.state.recipe.id==='r077'&&window.PRS_TEST.state.filtered);
    await page.waitForTimeout(500);
    const pixels=()=>page.evaluate(()=>{
@@ -46,7 +46,7 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
     return Array.from(c.getContext('2d').getImageData(45,35,1,1).data);
    });
    const f2=await pixels();
-   await page.getByRole('button',{name:'Sony FL3 (approx.)'}).click();
+   await page.getByRole('button',{name:'Sony FL3 (reference match)'}).click();
    await page.waitForTimeout(550);
    const f3=await pixels();
    assert.notDeepEqual(f2,f3,'FL2/FL3 should render differently');

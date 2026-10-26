@@ -27,3 +27,6 @@ Check the GitHub Actions Pages run for the release commit and perform the real s
 - Expected: 77 legacy presets unchanged; 4 distinct new presets; untouched factory render at neutral P9 values; custom 8-control adjustments change pixels; strength 0 leaves source; color channels bound 0–255; default FL2/FL3 colors differ; P9 settings are included in `api.opts()` for output and batch.
 - Manual browser: open A/B images, view FL2/FL3, change each of 8 sliders, verify split/fit, Undo/Redo, save/load 6 custom slots, migrate PRS_CUSTOM_V1 JSON, backup/restore PRS_CUSTOM_V2, test optional LUT behavior and saving to JPG/batch ZIP.
 - Remaining: iOS/Android real HEIC 10-bit HDR, JPEG ICC and EXIF, extremely large source images and camera-derived reference color matching not verified. No native Android APK rebuild in this web-only patch.
+
+## v0.15.1 QA
+Added source-only FL reference LUT regression and refreshed desktop/mobile Chromium smoke test for 82 recipes and v0.15.1. Color measurement statistics are single-scene only; real photo reference files excluded from public source. Actual camera fidelity for additional scenes is unverified.
