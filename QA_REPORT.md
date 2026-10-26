@@ -12,7 +12,7 @@
 - P7 measured reproduction accuracy on independent photographs or reference charts.
 ## Manual regression matrix
 1. Open photo A, split ON, open photo B of identical dimensions; left half must show B rather than A.
-2. Load a .cube file / apply P7 CSV-fit LUT, change a slider, Undo and Redo; do not restore a stale LUT.
+2. Load a .cube file and Undo immediately; then Redo. Apply P7 CSV-fit LUT, change a slider, Undo and Redo; do not restore a stale LUT.
 3. Apply custom recipe, Undo and Redo. After Undo, edit another slider: previous Redo must be discarded.
 4. Convert 2 photos in a batch; change recipe during conversion: both JPGs should use the same starting recipe and config.
 5. Load malformed custom/favorite JSON from localStorage, reload: app must still start.

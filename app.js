@@ -708,6 +708,8 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     }
   }
   function requestPreview(){const rev=++state.revision;clearTimeout(state.debounce);
+    // Notify P8 history after asynchronous LUT import and other core-only setting changes.
+    if(window.PRS_EXTENSION?.onCoreSettingsChanged)window.PRS_EXTENSION.onCoreSettingsChanged();
     if(!state.orig)return;
     // Exit original-comparison view on every edit so processed output is actually shown.
     if(state.original){state.original=false;el.compare.textContent='원본 보기';el.compare.classList.remove('active');viewBadge();}

@@ -8,7 +8,7 @@
 ## Patch v0.14.1
 1. Split comparison refreshes original ImageData after loading a **different same-size image**, including a new image with identical canvas dimensions.
 2. Split comparison follows stage ResizeObserver as well as window resize.
-3. P8 undo/redo tracks LUT object identity, checkpoints custom recipe and calibrated LUT application, trims history, clears redo on new branch.
+3. P8 undo/redo tracks LUT object identity, checkpoints custom recipe and calibrated LUT application, **records asynchronous .cube file imports through the core preview hook**, trims history, clears redo on new branch.
 4. Parse P7 calibration CSV without treating empty RGB channels as numeric zero.
 5. Loaded localStorage favorites/custom data is type-validated before use.
 6. Batch conversion snapshots recipe/FX/LUT parameters before processing the first of up to ten images, preventing mixed looks if controls change during export.

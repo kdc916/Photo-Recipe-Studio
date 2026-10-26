@@ -204,6 +204,6 @@ $('batchRun').onclick=async()=>{const files=[...$('batchFiles').files];if(batchB
  downloadBlob(zipFiles(zip),'PRS_Batch_'+Date.now()+'.zip');api.setStatus('사진 '+zip.length+'장 JPG 일괄 변환 완료 · ZIP 저장');
  }catch(err){api.setStatus('일괄 변환 실패: '+err.message,true);}finally{batchBusy=false;$('batchRun').disabled=false;}
 };
-window.PRS_EXTENSION={version,exportPhoto,onPresent:updateComparison,deltaE00,parsePairs,makeCube,zipFiles,get historyLength(){return history.length;},get favorites(){return [...favorites];}};
+window.PRS_EXTENSION={version,exportPhoto,onPresent:updateComparison,onCoreSettingsChanged:record,deltaE00,parsePairs,makeCube,zipFiles,get historyLength(){return history.length;},get favorites(){return [...favorites];}};
 buttons();applyFavoriteBadge();api.setStatus('P6~P8 확장 준비 완료 · 사진을 열어주세요.');
 })();
