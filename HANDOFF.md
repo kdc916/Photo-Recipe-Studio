@@ -22,3 +22,11 @@ Former version-specific `HANDOFF_v*.md` and `QA_REPORT_WEB_v*.md` root notes hav
 - No independent camera-manufacturer film fidelity validation. P7 ΔE00 is in-sample/training fit.
 - 12MP output recommended for memory-constrained browsers; 20MP/original can use substantial memory.
 - For full downloadable source, use the repo's **Code → Download ZIP** or `https://github.com/kdc916/Photo-Recipe-Studio/archive/refs/heads/main.zip`.
+
+## P9 v0.15.0 — Creative Look + independent 4 presets
+- Original 77 PMCA recipes kept unchanged; four extra web-approximation presets r077 Sony FL2, r078 Sony FL3, r079 Ricoh GR Standard, r080 Ricoh GR Vivid; no DCP, proprietary camera profile or camera-patching code reused.
+- The Creative Look panel has eight Sony-inspired controls, with their documented numeric ranges. Their pixel math is an independent display-sRGB approximation; real Sony curve/matrix and real Ricoh film fidelity are not claimed.
+- Contrast/highlights/shadows/fade/saturation use a per-pixel sRGB luminance/color pass; sharpness and clarity use local source-neighborhood kernels. Tune is processed by one engine in preview, 256-row padded full export and batch; neutral tune keeps v0.14.1 output pixel exact.
+- Six user slots are stored locally under `prs-v015-look-slots` with only JSON-serializable controls (no binary LUT). The existing P8 custom/favorite localStorage keys are preserved. `PRS_CUSTOM_V2` import/export carries custom and 6 slots, and can still import `PRS_CUSTOM_V1`.
+- Controls use mobile responsive 1-column layout and collapsed details, with sensible defaults for restored v0.14 recipes.
+- The reference A7CR research source is unofficial and camera-specific. Its noncommercial/third-party licenses are not imported. Lens/camera vendor color fidelity requires measured comparisons and permission for bundled proprietary color profiles.

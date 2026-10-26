@@ -372,7 +372,7 @@ const PRSEngine = (() => {
     const out=new Uint8ClampedArray(source),p=prepare(recipe,look,opts.strength/100,opts.exif,metadata,opts.p0===true);
     const tune=opts.creativeTune&&typeof opts.creativeTune==='object'?opts.creativeTune:null;
     const toneActive=!!(tune&&(tune.contrast||tune.highlights||tune.shadows||tune.fade||tune.saturation));
-    const spatialActive=!!(tune&&((Number(tune.sharpness)||3)!==3||Number(tune.clarity)>0));
+    const spatialActive=!!(tune&&(Number(tune.sharpness)!==3||Number(tune.clarity)>0));
     const sharpAmount=tune?(clamp((Number(tune.sharpness)||0)-3,-3,6)*.105)*p.strength:0;
     const clarityAmount=tune?clamp(Number(tune.clarity)||0,0,9)*.035*p.strength:0;
     const detailRadius=tune?Math.max(1,Math.min(3,Math.round((6-(Number(tune.sharpnessRange)||3))/2))):1;
@@ -477,7 +477,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const state={file:null,orig:null,filtered:null,metadata:{},recipe:allRecipes[0],currentGroup:groups[0],
     revision:0,processing:false,saving:false,original:false,debounce:0,lut:null,lutName:null,
     fitW:0,fitH:0,zoom:1,panX:0,panY:0,pointers:new Map(),pinch:null,lastTap:0,lastTapPos:null,lastTouchToggle:0};
-  const number=id=>Number(el[id].value);
+  const number=id=>Number((el[id]||byId(id)).value);
   const creativeIds=['creativeContrast','creativeHighlights','creativeShadows','creativeFade','creativeSaturation','creativeSharpness','creativeSharpnessRange','creativeClarity'];
   const creativeDefaults={creativeContrast:0,creativeHighlights:0,creativeShadows:0,creativeFade:0,creativeSaturation:0,creativeSharpness:3,creativeSharpnessRange:3,creativeClarity:0};
   function resetCreative(){for(const id of creativeIds){byId(id).value=creativeDefaults[id];byId(id+'Value').textContent=String(creativeDefaults[id]);}}
@@ -595,7 +595,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   el.stage.addEventListener('dragover',e=>{e.preventDefault();});
   el.stage.addEventListener('drop',async e=>{e.preventDefault();const file=e.dataTransfer?.files?.[0];if(file)await openFile(file);});
   for(const id of ['strength','grain','grainSize','grainSharp','halation','haloRadius','lutStrength',...creativeIds]){
-    el[id].addEventListener('input',()=>{byId(id+'Value').textContent=el[id].value+(creativeIds.includes(id)?'':'%');requestPreview();});
+    const target=el[id]||byId(id);target.addEventListener('input',()=>{byId(id+'Value').textContent=target.value+(creativeIds.includes(id)?'':'%');requestPreview();});
   }
   byId('creativeTuneEnabled').addEventListener('change',requestPreview);
   byId('creativeTuneReset').addEventListener('click',()=>{resetCreative();requestPreview();setStatus('Creative Look 세부 조절 초기화');});

@@ -1,5 +1,5 @@
-/* Photo Recipe Studio v0.14.1 — P6/P7/P8 optional professional workflow.
-   Core color transforms and the original 77 Sony recipes are unchanged. */
+/* Photo Recipe Studio v0.15.0 — P6/P7/P8/P9 browser workflow.
+   Original 77 PMCA presets preserved; P9 adds 4 independent approximations. */
 (()=>{
 'use strict';
 const api=window.PRS_TEST;
@@ -7,19 +7,30 @@ const $=id=>document.getElementById(id);
 if(!api||!api.state||!api.processor){$('status').textContent='확장 기능을 시작할 수 없습니다. 기본 사진 편집 기능은 유지됩니다.';return;}
 const {state,el,processor}=api;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
-const version='0.14.1';
+const version='0.15.0';
 const readJson=(key,fallback)=>{try{const d=JSON.parse(localStorage.getItem(key));return d??fallback;}catch{return fallback;}};
 const writeJson=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{api.setStatus('브라우저 저장소 사용 불가 · 이번 세션에서만 사용',true);return false;}};
-const keyFav='prs-v014-favorites',keyCustom='prs-v014-custom';
+const keyFav='prs-v014-favorites',keyCustom='prs-v014-custom',keySlots='prs-v015-look-slots';
+// Keep P8 storage keys unchanged to migrate existing favorites and custom recipes.
 const savedFavorites=readJson(keyFav,[]),savedCustom=readJson(keyCustom,[]);
 let favorites=new Set(Array.isArray(savedFavorites)?savedFavorites.filter(id=>api.allRecipes.some(r=>r.id===id)):[]);
 let custom=Array.isArray(savedCustom)?savedCustom.filter(c=>c&&typeof c.name==='string'&&c.settings&&typeof c.settings==='object').slice(0,30):[];
 let split=false,splitValue=50,history=[],future=[],lastSnapshot=null,tracking=false;
 let calibrationLut=null,calibrationText='',batchBusy=false;
+const storedSlots=readJson(keySlots,[]);
+const validSlot=x=>x&&typeof x==='object'&&typeof x.name==='string'&&
+  x.settings&&typeof x.settings==='object'&&api.allRecipes.some(r=>r.id===x.settings.recipeId);
+let slots=Array.from({length:6},(_,i)=>Array.isArray(storedSlots)&&validSlot(storedSlots[i])?
+ {name:storedSlots[i].name.slice(0,42),settings:storedSlots[i].settings}:null);
+let selectedSlot=0;
+const creativeIds=api.creativeIds||[];
+const tuneDefaults=api.creativeDefaults||{};
 function settingsSnapshot(){
  const snap={recipeId:state.recipe?.id,creative:el.creative.checked,p0:el.p0.checked,p1:el.p1.checked,p2:el.p2.checked,
-  exif:el.exif.checked,lut:state.lut,lutName:state.lutName, lutStrength:+el.lutStrength.value};
+  exif:el.exif.checked,creativeEnabled:$('creativeTuneEnabled').checked,
+  lut:state.lut,lutName:state.lutName, lutStrength:+el.lutStrength.value};
  for(const id of ['strength','grain','grainSize','grainSharp','halation','haloRadius'])snap[id]=+el[id].value;
+ for(const id of creativeIds)snap[id]=Number($(id).value);
  return snap;
 }
 const lutIds=new WeakMap();let lutSequence=0;
@@ -42,7 +53,17 @@ function checkpoint(){record();history.push(settingsSnapshot());if(history.lengt
 function restore(s){tracking=true;try{
  const rec=api.allRecipes.find(r=>r.id===s.recipeId);if(rec){state.recipe=rec;state.currentGroup=rec.group;el.group.value=rec.group;}
  for(const id of ['creative','p0','p1','p2','exif'])el[id].checked=!!s[id];
- for(const id of ['strength','grain','grainSize','grainSharp','halation','haloRadius','lutStrength']){el[id].value=s[id];$(id+'Value').textContent=s[id]+'%';}
+ $('creativeTuneEnabled').checked=s.creativeEnabled!==false;
+ for(const id of ['strength','grain','grainSize','grainSharp','halation','haloRadius','lutStrength']){
+  const control=el[id];const next=Number.isFinite(Number(s[id]))?Number(s[id]):Number(control.defaultValue);
+  control.value=Math.max(Number(control.min||0),Math.min(Number(control.max||100),next));
+  $(id+'Value').textContent=control.value+'%';
+ }
+ for(const id of creativeIds){
+  const control=$(id),v=Number.isFinite(Number(s[id]))&&s[id]!=null?Number(s[id]):tuneDefaults[id];
+  control.value=Math.max(Number(control.min),Math.min(Number(control.max),v));
+  $(id+'Value').textContent=control.value;
+ }
  state.lut=s.lut||null;state.lutName=s.lutName||null;
  $('lutInfo').textContent=s.lutName?'적용 중: '+s.lutName:'LUT 미적용';
  api.renderRecipes();api.requestPreview();lastSnapshot=settingsSnapshot();buttons();
@@ -73,10 +94,60 @@ function renderCustom(){const target=$('customSelect');target.replaceChildren(ne
 $('customSave').onclick=saveCustom;
 $('customLoad').onclick=()=>{const i=Number($('customSelect').value);if($('customSelect').value===''||!custom[i])return;checkpoint();const s={...custom[i].settings,lut:null,lutName:null};restore(s);api.setStatus('커스텀 설정 적용 · '+custom[i].name);};
 $('customDelete').onclick=()=>{const i=Number($('customSelect').value);if($('customSelect').value===''||!custom[i])return;custom.splice(i,1);writeJson(keyCustom,custom);renderCustom();};
-$('customExport').onclick=()=>{downloadBlob(new Blob([JSON.stringify({format:'PRS_CUSTOM_V1',custom},null,2)],{type:'application/json'}),'PRS_Custom_Recipes.json');};
-$('customImport').onchange=async(e)=>{try{const f=e.target.files[0];if(!f)return;if(f.size>250000)throw Error('JSON 최대 250KB');const d=JSON.parse(await f.text());if(d.format!=='PRS_CUSTOM_V1'||!Array.isArray(d.custom))throw Error('지원하지 않는 파일');
- custom=d.custom.filter(x=>x&&typeof x.name==='string'&&x.settings&&typeof x.settings==='object'&&api.allRecipes.some(r=>r.id===x.settings.recipeId)).slice(0,30).map(x=>({name:x.name.slice(0,52),settings:x.settings}));writeJson(keyCustom,custom);renderCustom();api.setStatus('커스텀 레시피 '+custom.length+'개 가져옴');}catch(err){api.setStatus('레시피 가져오기 실패: '+err.message,true);}finally{e.target.value='';}};
+$('customExport').onclick=()=>{downloadBlob(new Blob([JSON.stringify({format:'PRS_CUSTOM_V2',appVersion:version,custom,slots},null,2)],{type:'application/json'}),'PRS_Custom_Recipes_and_Slots.json');};
+$('customImport').onchange=async(e)=>{try{const f=e.target.files[0];if(!f)return;if(f.size>250000)throw Error('JSON 최대 250KB');const d=JSON.parse(await f.text());if(!['PRS_CUSTOM_V1','PRS_CUSTOM_V2'].includes(d.format)||!Array.isArray(d.custom))throw Error('지원하지 않는 파일');
+ custom=d.custom.filter(x=>x&&typeof x.name==='string'&&x.settings&&typeof x.settings==='object'&&api.allRecipes.some(r=>r.id===x.settings.recipeId)).slice(0,30).map(x=>({name:x.name.slice(0,52),settings:x.settings}));
+ writeJson(keyCustom,custom);
+ if(d.format==='PRS_CUSTOM_V2'&&Array.isArray(d.slots)){
+   slots=Array.from({length:6},(_,i)=>validSlot(d.slots[i])?{name:d.slots[i].name.slice(0,42),settings:d.slots[i].settings}:null);
+   writeJson(keySlots,slots);renderSlots();
+ }
+ renderCustom();api.setStatus('커스텀 레시피 '+custom.length+'개 및 저장 슬롯 가져오기 완료');}catch(err){api.setStatus('레시피 가져오기 실패: '+err.message,true);}finally{e.target.value='';}};
 renderCustom();
+
+function compactSnapshot(){
+ const snap=settingsSnapshot();delete snap.lut;delete snap.lutName;
+ // Binary LUT stays session-local: the persisted name alone would falsely imply restoration.
+ snap.lutStrength=0;
+ return snap;
+}
+function renderSlots(){
+ const target=$('lookSlots');target.replaceChildren();
+ slots.forEach((slot,index)=>{
+  const btn=document.createElement('button');
+  btn.type='button';btn.className='look-slot'+(selectedSlot===index?' selected':'');
+  btn.setAttribute('aria-pressed',String(selectedSlot===index));
+  btn.textContent=String(index+1)+' · '+(slot?slot.name:'비어 있음');
+  btn.title=slot?slot.name:'비어 있는 사용자 룩 슬롯';
+  btn.addEventListener('click',()=>{selectedSlot=index;renderSlots();});
+  target.append(btn);
+ });
+ $('lookSlotLoad').disabled=!slots[selectedSlot];
+ $('lookSlotDelete').disabled=!slots[selectedSlot];
+ $('lookSlotStatus').textContent='슬롯 '+(selectedSlot+1)+' · '+(slots[selectedSlot]?.name||'비어 있음')+
+  ' · LUT 데이터는 슬롯/JSON에 저장되지 않습니다.';
+}
+$('lookSlotSave').onclick=()=>{
+ const supplied=prompt('슬롯 '+(selectedSlot+1)+' 이름',state.recipe.name+' 커스텀');
+ if(supplied===null)return;
+ const name=supplied.trim().slice(0,42);
+ if(!name){api.setStatus('룩 이름을 입력해주세요.',true);return;}
+ slots[selectedSlot]={name,settings:compactSnapshot()};
+ writeJson(keySlots,slots);renderSlots();
+ api.setStatus('커스텀 룩 슬롯 '+(selectedSlot+1)+' 저장 완료: '+name);
+};
+$('lookSlotLoad').onclick=()=>{
+ const chosen=slots[selectedSlot];if(!chosen)return;
+ checkpoint();restore({...chosen.settings,lut:null,lutName:null});
+ api.setStatus('커스텀 룩 슬롯 '+(selectedSlot+1)+' 적용: '+chosen.name);
+};
+$('lookSlotDelete').onclick=()=>{
+ if(!slots[selectedSlot])return;
+ slots[selectedSlot]=null;writeJson(keySlots,slots);renderSlots();
+ api.setStatus('커스텀 룩 슬롯 '+(selectedSlot+1)+' 비움');
+};
+renderSlots();
+
 function getBlob(canvas,quality){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('JPG 인코딩 오류')),'image/jpeg',quality));}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 function crc32(data){let crc=0xffffffff;for(const byte of data){crc^=byte;for(let j=0;j<8;j++)crc=(crc>>>1)^(crc&1?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
@@ -107,20 +178,20 @@ async function exportPhoto(){if(state.saving||!state.file)return;
  const out=document.createElement('canvas');out.width=dim.w;out.height=dim.h;const ctx=out.getContext('2d',{colorSpace:'srgb',willReadFrequently:false});if(!ctx)throw Error('출력 캔버스 생성 실패');
  // Process in bounded vertical strips; 24px overlap reduces seams in local sharp/halation.
  const image=await imgElement(source);url=image.url;
- const cfg=api.opts(),look=cfg.creative?api.getLook(state.recipe):null,chunk=256,pad=24;
+ const cfg=api.opts(),recipeAtSave=state.recipe,look=cfg.creative?api.getLook(recipeAtSave):null,chunk=256,pad=24;
  for(let y=0;y<dim.h;y+=chunk){const top=Math.max(0,y-pad),bottom=Math.min(dim.h,y+chunk+pad),hh=bottom-top;
   const tmp=document.createElement('canvas');tmp.width=dim.w;tmp.height=hh;
   const t=tmp.getContext('2d',{willReadFrequently:true,colorSpace:'srgb'});if(!t)throw Error('이미지 작업 버퍼 생성 실패');
   t.drawImage(image.img,0,0,originalW,originalH,0,-top,dim.w,dim.h);
   const input=t.getImageData(0,0,dim.w,hh);
-  const output=await api.processor.process(input,state.recipe,look,{...cfg,tileY:top,fullH:dim.h},state.metadata,()=>false,()=>{});
+  const output=await api.processor.process(input,recipeAtSave,look,{...cfg,tileY:top,fullH:dim.h},state.metadata,()=>false,()=>{});
   if(!output)throw Error('이미지 처리가 중단되었습니다.');
   ctx.putImageData(output,0,top,0,y-top,dim.w,Math.min(chunk,dim.h-y));
   api.progress((y+Math.min(chunk,dim.h-y))/dim.h);
   await new Promise(res=>setTimeout(res,0));
  }
  const blob=await getBlob(out,quality);
- const base='PRS_'+state.recipe.name.replace(/[^a-zA-Z0-9가-힣_-]+/g,'_')+'_'+Date.now();
+ const base='PRS_'+recipeAtSave.name.replace(/[^a-zA-Z0-9가-힣_-]+/g,'_')+'_'+Date.now();
  if($('exportSidecar').checked){const json=new TextEncoder().encode(JSON.stringify(photoManifest(source,{width:dim.w,height:dim.h},dim.mode),null,2));const jpeg=new Uint8Array(await blob.arrayBuffer());downloadBlob(zipFiles([{name:base+'.jpg',data:jpeg},{name:base+'.json',data:json}]),base+'.zip');}
  else downloadBlob(blob,base+'.jpg');
  api.setStatus('JPG 저장 완료 · '+dim.w+'×'+dim.h+' · 품질 '+Math.round(quality*100)+'% · '+(blob.size/1048576).toFixed(1)+'MB');
@@ -204,6 +275,6 @@ $('batchRun').onclick=async()=>{const files=[...$('batchFiles').files];if(batchB
  downloadBlob(zipFiles(zip),'PRS_Batch_'+Date.now()+'.zip');api.setStatus('사진 '+zip.length+'장 JPG 일괄 변환 완료 · ZIP 저장');
  }catch(err){api.setStatus('일괄 변환 실패: '+err.message,true);}finally{batchBusy=false;$('batchRun').disabled=false;}
 };
-window.PRS_EXTENSION={version,exportPhoto,onPresent:updateComparison,onCoreSettingsChanged:record,deltaE00,parsePairs,makeCube,zipFiles,get historyLength(){return history.length;},get favorites(){return [...favorites];}};
-buttons();applyFavoriteBadge();api.setStatus('P6~P8 확장 준비 완료 · 사진을 열어주세요.');
+window.PRS_EXTENSION={version,exportPhoto,onPresent:updateComparison,onCoreSettingsChanged:record,deltaE00,parsePairs,makeCube,zipFiles,get historyLength(){return history.length;},get favorites(){return [...favorites];},get lookSlots(){return slots.map(s=>s?.name||null);}};
+buttons();applyFavoriteBadge();api.setStatus('P6~P9 준비 완료 · 81개 레시피 · 사진을 열어주세요.');
 })();
