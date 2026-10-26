@@ -21,3 +21,7 @@ jobs:
           node --check extension.js
       - name: Creative Look P9 regression
         run: node tests/creative_look_v015.test.js
+      - name: Install Chromium automation
+        run: npm install --no-save --no-audit --no-fund playwright-core@1.56.1
+      - name: Browser smoke desktop and mobile
+        run: node tests/browser_smoke_v015.test.js
