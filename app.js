@@ -1,6 +1,6 @@
 
 // Build v0.8.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.15.0',engineReady:false};
+window.PRS_DIAGNOSTIC={version:'0.15.1',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -24,7 +24,8 @@ const PRS_V015_ADDED = (() => {
     make('r077','Sony',0,'Sony FL2 (approx.)','Sony FL2 published look characteristics'),
     make('r078','Sony',0,'Sony FL3 (approx.)','Sony FL3 published look characteristics'),
     make('r079','Ricoh GR',5,'GR Standard (approx.)','Ricoh GR Standard intent'),
-    make('r080','Ricoh GR',5,'GR Vivid (approx.)','Ricoh GR Vivid intent')
+    make('r080','Ricoh GR',5,'GR Vivid (approx.)','Ricoh GR Vivid intent'),
+    make('r081','Sony',0,'Sony FL1 (measured reference)','Sony ILCE-7M5 FL1 same-scene reference')
   ];
 })();
 const PRS_V015_LOOKS={
@@ -34,6 +35,8 @@ const PRS_V015_LOOKS={
   r080:{saturation:1.073,contrast:1.052,vibrance:.033,shadowCurve:.034,highlightCurve:.015,warmth:.006,magenta:0,shadowRgb:null,highlightRgb:null,sectorSat:[.025,.012,.022,.022,.025,.018],rationale:'GR Vivid-like rich color interpretation · unofficial'}
 };
 
+/* Source photos are deliberately not embedded; profiles were color-managed (P3 -> sRGB) and aligned. */
+const PRS_FL_REFERENCE_COEFFS={"r081":[[0.1476696,0.0847641,-0.0250376,0.0347618,-0.1247877,-0.0402659,-0.0621188,0.0284634,0.0175803,-0.003413,-0.0285616,-0.0217242,-0.0140267,-0.0197215,-0.0143911,-0.0103842,-0.0165898,-0.010756,-0.0051696,0.0007967],[0.1628644,0.0019318,-0.0574987,0.1311357,0.0257041,-0.0503175,-0.0932069,-0.0447261,-0.0589225,0.0126851,-0.0064655,-0.0063799,-0.0090299,-0.00574,-0.0096062,-0.014649,-0.0122612,-0.0158966,-0.020993,-0.0288248],[0.1615194,-0.0424176,0.1675524,-0.0537311,0.0262582,0.0197694,-0.0453365,-0.0190022,-0.0796879,-0.1098665,0.0016127,0.003239,-0.0006486,-0.0027008,-0.0092447,-0.0173575,-0.010627,-0.0181303,-0.0274155,-0.0396552]],"r077":[[0.1308127,-0.0010411,-0.1540601,0.1363402,-0.0823615,-0.0121921,-0.1014583,0.0102678,-0.0185562,0.015053,-0.0096901,-0.0054026,-0.0001284,-0.0093563,-0.0061451,-0.0030109,-0.0088436,-0.0079714,-0.0081068,-0.0123898],[0.1348317,0.0389058,-0.1507211,0.0804006,0.0162535,-0.0770822,-0.0350269,-0.0467292,-0.0308814,-0.0051174,-0.0042147,-0.001905,-0.0047045,0.0040908,-0.0002781,-0.0071434,-0.0023616,-0.0054815,-0.0102123,-0.014483],[0.1334255,0.0236559,0.0637287,-0.126232,0.0000176,0.0031048,-0.0049767,-0.0120448,-0.0474375,-0.1080963,-0.0065824,-0.0002886,0.0036201,0.0006307,0.0014456,-0.0019198,-0.002195,-0.0027112,-0.0067954,-0.0127359]],"r078":[[0.1179637,0.0193308,-0.1098119,0.0540378,-0.0911285,0.0026469,-0.0585542,0.0295066,0.0037039,-0.0117737,-0.0009192,0.0005722,0.0056806,-0.0055663,-0.0017437,0.0027823,-0.0055493,-0.0032081,-0.0004869,0.0012701],[0.1290362,-0.0427649,-0.1548688,0.1442439,0.0423769,-0.0509828,-0.0677724,-0.0464631,-0.0413263,0.0361153,0.0014967,0.002916,0.0012405,0.00746,0.0050074,0.0005045,0.0036146,0.0010456,-0.0036277,-0.0106857],[0.1300855,-0.1258474,0.1991599,-0.1240794,-0.0140694,0.0545563,-0.0302678,-0.0017173,-0.0714189,-0.0661632,-0.001349,0.0044744,0.010241,-0.0013641,0.0021426,0.0058911,-0.0055493,-0.0025522,-0.0001862,0.0004153,-0.0060357]]};
 ;
 /* Photo Recipe Studio Web 0.5.0: port of Android ColorEngine + FilmFx (v0.5.0)
  * Native math retained; JS Float64/Uint8 rounding and browser color management
@@ -339,7 +342,7 @@ const PRSEngine = (() => {
   }
 
   // P9 approximate Creative Look fine tuning, evaluated in display sRGB.
-  // Default 0/0/0/0/0/3/3/0 leaves the v0.15.0 output pixel-exact.
+  // Default 0/0/0/0/0/3/3/0 leaves the v0.15.1 output pixel-exact.
   function creativeTunePixel(rgb,tune,amount){
     const con=Number(tune.contrast)||0,hi=Number(tune.highlights)||0,
       sh=Number(tune.shadows)||0,fade=Number(tune.fade)||0,sat=Number(tune.saturation)||0;
@@ -366,9 +369,29 @@ const PRSEngine = (() => {
     return (Math.round(r*255)<<16)|(Math.round(g*255)<<8)|Math.round(b*255);
   }
 
+
+  // Lazily build a 33³ sRGB transform from the measured cubic coefficients.
+  // sklearn PolynomialFeatures degree=3 RGB monomial order, fast per-pixel trilinear use.
+  const measuredLuts=Object.create(null);
+  function measuredLutFor(id){
+    const coef=PRS_FL_REFERENCE_COEFFS[id];if(!coef)return null;
+    if(measuredLuts[id])return measuredLuts[id];
+    const size=33,data=new Float32Array(size*size*size*3),R=coef[0],G=coef[1],B=coef[2];
+    for(let bz=0;bz<size;bz++)for(let gy=0;gy<size;gy++)for(let rx=0;rx<size;rx++){
+      const red=rx/(size-1),green=gy/(size-1),blue=bz/(size-1);
+      const x=2*red-1,y=2*green-1,z=2*blue-1,xx=x*x,yy=y*y,zz=z*z;
+      const p=[1,x,y,z,xx,x*y,x*z,yy,y*z,zz,xx*x,xx*y,xx*z,x*yy,x*y*z,x*zz,yy*y,yy*z,y*zz,zz*z];
+      let r=red,g=green,b=blue;
+      for(let k=0;k<20;k++){const f=p[k];r+=R[k]*f;g+=G[k]*f;b+=B[k]*f;}
+      const i=3*(rx+size*(gy+size*bz));data[i]=clamp(r);data[i+1]=clamp(g);data[i+2]=clamp(b);
+    }
+    return measuredLuts[id]={size,data,domainMin:[0,0,0],domainMax:[1,1,1]};
+  }
+
   const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
   async function process(imageData,recipe,look,opts,metadata={},cancel=()=>false,report=()=>{}) {
     const w=imageData.width,h=imageData.height,source=imageData.data;
+    const measuredLut=opts.creative===true?measuredLutFor(recipe.id):null;
     const out=new Uint8ClampedArray(source),p=prepare(recipe,look,opts.strength/100,opts.exif,metadata,opts.p0===true);
     const tune=opts.creativeTune&&typeof opts.creativeTune==='object'?opts.creativeTune:null;
     const toneActive=!!(tune&&(tune.contrast||tune.highlights||tune.shadows||tune.fade||tune.saturation));
@@ -400,11 +423,22 @@ const PRSEngine = (() => {
           r=detail(source[idx],0);g=detail(source[idx+1],1);b=detail(source[idx+2],2);
         }
         let c=pixelPacked(r,g,b,p);
-        if(toneActive)c=creativeTunePixel(c,tune,p.strength);
+        if(toneActive&&!measuredLut)c=creativeTunePixel(c,tune,p.strength);
         out[idx]=c>>>16&255;out[idx+1]=c>>>8&255;out[idx+2]=c&255;
       }
       if(y%48===0){report(.68*y/h);await nextFrame();}
     }}
+    // Matched ILCE-7M5 Standard to FL1/FL2/FL3, then optional P9 tune.
+    if(measuredLut&&p.strength>0)for(let y=0;y<h;y++){
+      if(cancel())return null;
+      for(let x=0;x<w;x++){
+        const i=(y*w+x)*4;if(out[i+3]===0)continue;
+        let rgb=lutPixel((out[i]<<16)|(out[i+1]<<8)|out[i+2],measuredLut,p.strength);
+        if(toneActive)rgb=creativeTunePixel(rgb,tune,p.strength);
+        out[i]=rgb>>>16&255;out[i+1]=rgb>>>8&255;out[i+2]=rgb&255;
+      }
+      if(y%64===0){report(.55*y/h);await nextFrame();}
+    }
     // Optional user-loaded calibration LUT, after camera look and before grain/halation.
     const lut=opts.lut,amount=clamp(Number(opts.lutStrength||0)/100);
     if(lut&&amount>0){
@@ -488,7 +522,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   }:null;
   const opts=()=>({creativeTune:creativeOptions(),strength:number('strength'),creative:el.creative.checked,p0:el.p0.checked,p1:el.p1.checked,p2:el.p2.checked,exif:el.exif.checked,
     fx:{grain:number('grain'),grainSize:number('grainSize'),grainSharp:number('grainSharp'),halation:number('halation'),haloRadius:number('haloRadius')},lut:state.lut,lutStrength:number('lutStrength')});
-  const getLook=r=>PRS_V015_LOOKS[r.id]||(el.p2.checked&&P2_LOOKS[r.id])||looks.id[r.id]||looks.group[r.group]||null;
+  const getLook=r=>PRS_FL_REFERENCE_COEFFS[r.id]?null:(PRS_V015_LOOKS[r.id]||(el.p2.checked&&P2_LOOKS[r.id])||looks.id[r.id]||looks.group[r.group]||null);
   const getTexture=r=>P2_TEXTURES[r.id]||null;
   function updateFxHint(){const t=getTexture(state.recipe);el.fxPresetHint.textContent=t?'추천: '+t.note+' (그레인 '+t.grain+' / 입자 '+t.grainSize+' / 할레이션 '+t.halation+')':'별도 질감 추천 없음 · 현재 수동 값을 유지합니다.';}
   function setStatus(s,error=false){el.status.textContent=s;el.status.classList.toggle('error',error);}
@@ -499,6 +533,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     el.name.textContent=r.name;
     el.detail.textContent=`${s.picture_effect_id?'Picture Effect '+s.picture_effect_id:s.creative_style}  ·  채도 ${signed(s.saturation_steps)}  ·  대비 ${signed(s.contrast_steps)}  ·  WB ${signed(s.wb_amber_blue_steps)} / ${signed(s.wb_green_magenta_steps)}  ·  ${s.kelvin?s.kelvin+'K':'AWB'}`;
     if(el.p1.checked&&el.p0.checked&&el.creative.checked&&PRSEngine.p1Profiles[r.id]){el.reason.textContent='P1 필름 특성 · '+PRSEngine.p1Profiles[r.id].name;}
+    else if(PRS_FL_REFERENCE_COEFFS[r.id])el.reason.textContent='사용자 Sony ILCE-7M5 Standard → '+r.name+' 사진 기준 sRGB 색상 교정 (다른 장면 정확도 미검증)';
     else el.reason.textContent=r.id==='r000'?'FACTORY는 원본 유지용 레시피입니다. 색감을 적용하려면 다른 레시피를 선택하세요.':((l&&el.creative.checked)?'브랜드 보정 · '+l.rationale:'Sony 카메라 설정값 기반 근사');
   }
   function resetGrain(){
@@ -738,7 +773,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     if(heicLoader)return heicLoader;
     heicLoader=new Promise((resolve,reject)=>{
       const script=document.createElement('script');
-      script.src='./vendor/heic2any.min.js?v=0.15.0';script.async=true;
+      script.src='./vendor/heic2any.min.js?v=0.15.1';script.async=true;
       script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC 디코더 초기화 실패'));
       script.onerror=()=>reject(new Error('HEIC 디코더 파일이 없습니다 (vendor/heic2any.min.js)'));
       document.head.appendChild(script);
@@ -839,10 +874,10 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.15.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.15.1',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.15.0',source:'app.js'};
+  window.PRS_BOOT={state:'ready',version:'0.15.1',source:'app.js'};
   window.PRS_TEST={state,el,processor,allRecipes,parseExif,opts,getLook,decode,openFile,decodeWithHeicFallback,isHeicFile,loadHeicDecoder,P2_LOOKS,P2_TEXTURES,getTexture,renderRecipes,requestPreview,chooseRecipe,setStatus,setDisabled,progress,creativeIds,creativeDefaults,resetCreative};
 })();
