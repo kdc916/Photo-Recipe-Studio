@@ -1,6 +1,6 @@
 
 // Build v0.8.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.14.0',engineReady:false};
+window.PRS_DIAGNOSTIC={version:'0.14.1',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -653,7 +653,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     if(heicLoader)return heicLoader;
     heicLoader=new Promise((resolve,reject)=>{
       const script=document.createElement('script');
-      script.src='./vendor/heic2any.min.js?v=0.14.0';script.async=true;
+      script.src='./vendor/heic2any.min.js?v=0.14.1';script.async=true;
       script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC 디코더 초기화 실패'));
       script.onerror=()=>reject(new Error('HEIC 디코더 파일이 없습니다 (vendor/heic2any.min.js)'));
       document.head.appendChild(script);
@@ -752,10 +752,10 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.14.0',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.14.1',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.14.0',source:'app.js'};
+  window.PRS_BOOT={state:'ready',version:'0.14.1',source:'app.js'};
   window.PRS_TEST={state,el,processor,allRecipes,parseExif,opts,getLook,decode,openFile,decodeWithHeicFallback,isHeicFile,loadHeicDecoder,P2_LOOKS,P2_TEXTURES,getTexture,renderRecipes,requestPreview,chooseRecipe,setStatus,setDisabled,progress};
 })();

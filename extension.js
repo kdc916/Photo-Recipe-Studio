@@ -1,4 +1,4 @@
-/* Photo Recipe Studio v0.14.0 — P6/P7/P8 optional professional workflow.
+/* Photo Recipe Studio v0.14.1 — P6/P7/P8 optional professional workflow.
    Core color transforms and the original 77 Sony recipes are unchanged. */
 (()=>{
 'use strict';
@@ -7,12 +7,13 @@ const $=id=>document.getElementById(id);
 if(!api||!api.state||!api.processor){$('status').textContent='확장 기능을 시작할 수 없습니다. 기본 사진 편집 기능은 유지됩니다.';return;}
 const {state,el,processor}=api;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
-const defaults={grain:0,grainSize:30,grainSharp:0,halation:0,haloRadius:35};
-const version='0.14.0';
+const version='0.14.1';
 const readJson=(key,fallback)=>{try{const d=JSON.parse(localStorage.getItem(key));return d??fallback;}catch{return fallback;}};
 const writeJson=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{api.setStatus('브라우저 저장소 사용 불가 · 이번 세션에서만 사용',true);return false;}};
 const keyFav='prs-v014-favorites',keyCustom='prs-v014-custom';
-let favorites=new Set(readJson(keyFav,[])),custom=readJson(keyCustom,[]);
+const savedFavorites=readJson(keyFav,[]),savedCustom=readJson(keyCustom,[]);
+let favorites=new Set(Array.isArray(savedFavorites)?savedFavorites.filter(id=>api.allRecipes.some(r=>r.id===id)):[]);
+let custom=Array.isArray(savedCustom)?savedCustom.filter(c=>c&&typeof c.name==='string'&&c.settings&&typeof c.settings==='object').slice(0,30):[];
 let split=false,splitValue=50,history=[],future=[],lastSnapshot=null,tracking=false;
 let calibrationLut=null,calibrationText='',batchBusy=false;
 function settingsSnapshot(){
@@ -21,13 +22,23 @@ function settingsSnapshot(){
  for(const id of ['strength','grain','grainSize','grainSharp','halation','haloRadius'])snap[id]=+el[id].value;
  return snap;
 }
-function comparable(s){const c={...s};delete c.lut;return JSON.stringify(c);}
+const lutIds=new WeakMap();let lutSequence=0;
+function comparable(s){
+ const c={...s};
+ if(s.lut&&typeof s.lut==='object'){
+   if(!lutIds.has(s.lut))lutIds.set(s.lut,++lutSequence);
+   c.lutIdentity=lutIds.get(s.lut);
+ }else c.lutIdentity=null;
+ delete c.lut;
+ return JSON.stringify(c);
+}
 lastSnapshot=settingsSnapshot();
 function record(){if(tracking)return;const now=settingsSnapshot();if(comparable(now)===comparable(lastSnapshot))return;
  if(!history.length||comparable(history[history.length-1])!==comparable(lastSnapshot))history.push(lastSnapshot);
  if(history.length>30)history.shift();future=[];lastSnapshot=now;buttons();}
 function onAction(){if(tracking)return;queueMicrotask(record);}
 function buttons(){$('undoBtn').disabled=!history.length;$('redoBtn').disabled=!future.length;}
+function checkpoint(){record();history.push(settingsSnapshot());if(history.length>30)history.shift();future=[];buttons();}
 function restore(s){tracking=true;try{
  const rec=api.allRecipes.find(r=>r.id===s.recipeId);if(rec){state.recipe=rec;state.currentGroup=rec.group;el.group.value=rec.group;}
  for(const id of ['creative','p0','p1','p2','exif'])el[id].checked=!!s[id];
@@ -60,7 +71,7 @@ function saveCustom(){const label=prompt('커스텀 레시피 이름',state.reci
 function renderCustom(){const target=$('customSelect');target.replaceChildren(new Option('저장된 커스텀 레시피 선택',''));
  custom.forEach((c,i)=>target.add(new Option(c.name,i)));}
 $('customSave').onclick=saveCustom;
-$('customLoad').onclick=()=>{const i=Number($('customSelect').value);if($('customSelect').value===''||!custom[i])return;history.push(settingsSnapshot());buttons();const s={...custom[i].settings,lut:null,lutName:null};restore(s);api.setStatus('커스텀 설정 적용 · '+custom[i].name);};
+$('customLoad').onclick=()=>{const i=Number($('customSelect').value);if($('customSelect').value===''||!custom[i])return;checkpoint();const s={...custom[i].settings,lut:null,lutName:null};restore(s);api.setStatus('커스텀 설정 적용 · '+custom[i].name);};
 $('customDelete').onclick=()=>{const i=Number($('customSelect').value);if($('customSelect').value===''||!custom[i])return;custom.splice(i,1);writeJson(keyCustom,custom);renderCustom();};
 $('customExport').onclick=()=>{downloadBlob(new Blob([JSON.stringify({format:'PRS_CUSTOM_V1',custom},null,2)],{type:'application/json'}),'PRS_Custom_Recipes.json');};
 $('customImport').onchange=async(e)=>{try{const f=e.target.files[0];if(!f)return;if(f.size>250000)throw Error('JSON 최대 250KB');const d=JSON.parse(await f.text());if(d.format!=='PRS_CUSTOM_V1'||!Array.isArray(d.custom))throw Error('지원하지 않는 파일');
@@ -82,7 +93,7 @@ function zipFiles(files){let chunks=[],central=[],offset=0,total=0;const enc=new
 // P6: output policy. Full-size is explicit; no silent quality downgrade.
 function exportDimensions(w,h){const mode=$('exportResolution').value,limit=mode==='original'?Infinity:mode==='preview'?(state.orig?.width||w)*(state.orig?.height||h):Number(mode)*1000000;
  const scale=Math.min(1,Math.sqrt(limit/(w*h)));return {w:Math.max(1,Math.floor(w*scale)),h:Math.max(1,Math.floor(h*scale)),mode};}
-function photoManifest(source,output,mode){return {app:'Photo Recipe Studio',appVersion:version,sourceName:source.name,sourceWidth:state.origDims?.[0],sourceHeight:state.origDims?.[1],outputWidth:output.width,outputHeight:output.height,colorSpace:'sRGB (browser JPEG canvas)',sourceICCEmbedded:false,sourceEXIFEmbedded:false,sourceEXIFSummary:state.metadata,settings:{...api.opts(),lut:null},recipe:state.recipe.name,outputMode:mode,date:new Date().toISOString(),note:'Privacy: original EXIF including GPS and ICC profiles not embedded in JPEG; manifest is optional. ICC preservation would be invalid if the pixels are converted to sRGB.'};}
+function photoManifest(source,output,mode){return {app:'Photo Recipe Studio',appVersion:version,sourceName:state.file?.name||source.name,convertedFromHEIC:!!state.heicConverted,sourceWidth:state.origDims?.[0],sourceHeight:state.origDims?.[1],outputWidth:output.width,outputHeight:output.height,colorSpace:'sRGB (browser JPEG canvas)',sourceICCEmbedded:false,sourceEXIFEmbedded:false,sourceEXIFSummary:state.metadata,settings:{...api.opts(),lut:null},recipe:state.recipe.name,outputMode:mode,date:new Date().toISOString(),note:'Privacy: original EXIF including GPS and ICC profiles not embedded in JPEG; manifest is optional. ICC preservation would be invalid if the pixels are converted to sRGB.'};}
 async function imgElement(file){const url=URL.createObjectURL(file);try{const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('이미지 디코딩 실패'));i.src=url;});return {img,url};}catch(e){URL.revokeObjectURL(url);throw e;}}
 async function exportPhoto(){if(state.saving||!state.file)return;
  const source=state.decodeFile||state.file,quality=Number($('exportQuality').value)/100;
@@ -137,7 +148,7 @@ function deltaE00(a,b){const [L1,A1,B1]=lab(a),[L2,A2,B2]=lab(b),C1=Math.hypot(A
  const RT=-Math.sin(2*dtheta)*RC;
  return Math.sqrt(Math.pow(dL/SL,2)+Math.pow(dC/SC,2)+Math.pow(dH/SH,2)+RT*(dC/SC)*(dH/SH));}
 function parsePairs(text){const lines=text.replace(/\ufeff/g,'').trim().split(/\r?\n/).filter(s=>s.trim()&&!s.trim().startsWith('#'));const out=[];
- for(const line of lines){const p=line.trim().split(/[,;\t]+/).map(s=>s.trim());if(p.length<6)continue;const v=p.slice(0,6).map(Number);if(v.every(n=>Number.isFinite(n)&&n>=0&&n<=255))out.push({input:v.slice(0,3),target:v.slice(3,6)});}
+ for(const line of lines){const p=line.trim().split(/[,;\t]+/).map(s=>s.trim());if(p.length<6||p.slice(0,6).some(s=>s===''))continue;const v=p.slice(0,6).map(Number);if(v.every(n=>Number.isFinite(n)&&n>=0&&n<=255))out.push({input:v.slice(0,3),target:v.slice(3,6)});}
  if(out.length<6||out.length>96)throw Error('RGB 기준 쌍은 6~96개 필요합니다. input R,G,B / target R,G,B (0~255).');
  return out;
 }
@@ -159,34 +170,36 @@ $('calibrationCSV').onchange=async e=>{const file=e.target.files[0];if(!file)ret
  $('calibrationMetrics').textContent=`기준 RGB ${pairs.length}개 · 학습 데이터 평균 ΔE00 ${before.toFixed(2)} → ${after.toFixed(2)} · 별도 검증 데이터 아님`;
  $('calibrationApply').disabled=false;$('calibrationDownload').disabled=false;
  }catch(err){api.setStatus('P7 기준 데이터 오류: '+err.message,true);$('calibrationMetrics').textContent='교정 실패 · CSV 형식/값을 확인하세요.';}finally{e.target.value='';}};
-$('calibrationApply').onclick=()=>{if(!calibrationLut)return;history.push(settingsSnapshot());buttons();state.lut=calibrationLut;state.lutName='P7 CSV fitting';el.lutStrength.value=100;$('lutStrengthValue').textContent='100%';$('lutInfo').textContent='P7 기준값 보정 LUT · ΔE 학습 데이터 참고';api.requestPreview();api.setStatus('P7 보정 LUT 적용 · 장면별 색차를 별도 검증하세요.');};
+$('calibrationApply').onclick=()=>{if(!calibrationLut)return;checkpoint();state.lut=calibrationLut;state.lutName='P7 CSV fitting';el.lutStrength.value=100;$('lutStrengthValue').textContent='100%';$('lutInfo').textContent='P7 기준값 보정 LUT · ΔE 학습 데이터 참고';lastSnapshot=settingsSnapshot();api.requestPreview();api.setStatus('P7 보정 LUT 적용 · 장면별 색차를 별도 검증하세요.');};
 $('calibrationDownload').onclick=()=>{if(calibrationText)downloadBlob(new Blob([calibrationText],{type:'text/plain'}),'PRS_P7_Measured_Fit_17.cube');};
 // P8 split compare: same pan and zoom as the edit canvas.
 const comparison=document.createElement('canvas');comparison.id='comparisonCanvas';comparison.className='preview-canvas';comparison.style.pointerEvents='none';comparison.style.zIndex='2';comparison.hidden=true;el.stage.insertBefore(comparison,el.placeholder);
+let comparisonSource=null;
 function updateComparison(){if(!state.orig||!split){comparison.hidden=true;comparison.style.display='none';return;}comparison.hidden=false;comparison.style.display='block';
- if(comparison.width!==state.orig.width||comparison.height!==state.orig.height){comparison.width=state.orig.width;comparison.height=state.orig.height;comparison.getContext('2d').putImageData(state.orig,0,0);}
+ if(comparisonSource!==state.orig||comparison.width!==state.orig.width||comparison.height!==state.orig.height){comparison.width=state.orig.width;comparison.height=state.orig.height;comparison.getContext('2d').putImageData(state.orig,0,0);comparisonSource=state.orig;}
  comparison.style.width=el.canvas.style.width;comparison.style.height=el.canvas.style.height;comparison.style.transform=el.canvas.style.transform;
  comparison.style.clipPath=`inset(0 ${100-splitValue}% 0 0)`;
 }
 $('splitToggle').onclick=()=>{split=!split;$('splitToggle').textContent=split?'분할 비교 ON':'분할 비교';$('splitControl').hidden=!split;updateComparison();};
 $('splitRange').oninput=e=>{splitValue=+e.target.value;updateComparison();};
 api.onPresent=updateComparison;
-const oldResize=window.onresize;window.addEventListener('resize',()=>requestAnimationFrame(updateComparison));
+window.addEventListener('resize',()=>requestAnimationFrame(updateComparison));
+if(typeof ResizeObserver==='function')new ResizeObserver(()=>requestAnimationFrame(updateComparison)).observe(el.stage);
 // P8 batch: zip archive avoids the browser blocking dozens of separate downloads.
 $('batchRun').onclick=async()=>{const files=[...$('batchFiles').files];if(batchBusy||!files.length){api.setStatus('일괄 변환할 사진을 선택하세요.',true);return;}
  if(files.length>10){api.setStatus('일괄 변환은 한 번에 최대 10장까지 지원합니다.',true);return;}
  batchBusy=true;$('batchRun').disabled=true;const zip=[];let total=0;
+ const batchConfig=api.opts(),batchRecipe=state.recipe,batchLook=batchConfig.creative?api.getLook(batchRecipe):null;
  try{
  for(let n=0;n<files.length;n++){
   const file=files[n];api.setStatus(`일괄 변환 ${n+1}/${files.length}: ${file.name}`);
   const loaded=await api.decodeWithHeicFallback(file,Number($('batchMaxPixels').value)*1000000);const d=loaded.decoded;
-  const cfg=api.opts(),look=cfg.creative?api.getLook(state.recipe):null;
-  const processed=await processor.process(d.data,state.recipe,look,cfg,{},()=>false,()=>{});if(!processed)throw Error('이미지 처리 중단');
+  const processed=await processor.process(d.data,batchRecipe,batchLook,batchConfig,{},()=>false,()=>{});if(!processed)throw Error('이미지 처리 중단');
   const canvas=document.createElement('canvas');canvas.width=processed.width;canvas.height=processed.height;canvas.getContext('2d').putImageData(processed,0,0);
   const blob=await getBlob(canvas,Number($('exportQuality').value)/100);const array=new Uint8Array(await blob.arrayBuffer());total+=array.length;
   if(total>140*1024*1024)throw Error('사진 묶음 용량 초과 (140MB)');
   const safe=file.name.replace(/\.[^.]+$/,'').replace(/[^a-zA-Z0-9가-힣_-]/g,'_').slice(0,80);
-  zip.push({name:`${String(n+1).padStart(2,'0')}_${safe}_${state.recipe.id}.jpg`,data:array});
+  zip.push({name:`${String(n+1).padStart(2,'0')}_${safe}_${batchRecipe.id}.jpg`,data:array});
  }
  downloadBlob(zipFiles(zip),'PRS_Batch_'+Date.now()+'.zip');api.setStatus('사진 '+zip.length+'장 JPG 일괄 변환 완료 · ZIP 저장');
  }catch(err){api.setStatus('일괄 변환 실패: '+err.message,true);}finally{batchBusy=false;$('batchRun').disabled=false;}

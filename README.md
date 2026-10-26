@@ -1,31 +1,23 @@
-# Photo Recipe Studio WEB v0.14.0 (P6 + P7 + P8)
+# Photo Recipe Studio WEB v0.14.1
 
-Stable basis: 77 original Sony recipes, 12 groups, P0-P5 color, local HEIC fallback and compact mobile workflow.
+Client-side photo color grading studio with **77 Sony/PMCA-derived recipes across 12 groups**, experimental film/brand look tuning, HEIC fallback, LUT support, grain/halation, local image editing and JPEG/ZIP export.
 
-## P6 quality export
-- JPEG quality 70-100%, selected 12MP/20MP/preview/original with memory safety cap.
-- Optional JPEG + edit-settings JSON sidecar ZIP. Canvas output is sRGB; original ICC and EXIF are NOT reembedded.
+**[Live GitHub Pages](https://kdc916.github.io/Photo-Recipe-Studio/?v=0.14.1)** · **[Download source ZIP](https://github.com/kdc916/Photo-Recipe-Studio/archive/refs/heads/main.zip)**
 
-## P7 reference color calibration
-- CSV 6-96 matching sRGB observed/target RGB pairs, CIEDE2000 TRAINING delta-E and fitted 17x17x17 .cube LUT.
-- Training fit is not independently verified camera/film accuracy; measured chart/reference and held-out scenes are needed.
+## Features
+- P0–P5: creative look, color protection, 3D LUT, deterministic grain/sharpness, local HEIC fallback and compact mobile layout.
+- P6: JPEG export quality and 12MP/20MP/preview/original resolution, optional settings/EXIF-summary JSON sidecar ZIP.
+- P7: 6–96 observed/target sRGB calibration pairs, CIEDE2000 **training** ΔE00, optional .cube LUT fitting. This is **not independently validated camera or film matching**.
+- P8: original/filtered split compare, parameter Undo/Redo, favorites, custom recipes with JSON backup, up to 10-photo ZIP batch export.
+- **v0.14.1 maintenance**: same-dimension split-photo fix, LUT-aware history, safer CSV/localStorage, consistent batch settings and responsive split canvas.
+- Photos are processed locally; no server upload. Browser canvas outputs sRGB JPEG and does not preserve original EXIF, GPS or ICC bytes.
 
-## P8 pro editing
-- Split original/filtered compare, up to 30 step parameter Undo/Redo, favorites, named custom recipes with JSON backup.
-- Batch up to 10 photos to one ZIP of JPG images using current recipe (3/8/12MP per photo).
+## Important files
+`index.html`, `app.js`, `extension.js`, `vendor/heic2any.min.js`, `.nojekyll`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, and the LUT/CSV reference files.
 
-## Deployment
-Root files: index.html + app.js + extension.js + .nojekyll and vendor/heic2any.min.js.
-Live page: https://kdc916.github.io/Photo-Recipe-Studio/?v=0.14.0
-Download full repo for offline HEIC binary: https://github.com/kdc916/Photo-Recipe-Studio/archive/refs/heads/main.zip
+Documentation: [HANDOFF.md](HANDOFF.md) · [QA_REPORT.md](QA_REPORT.md) · [P3 LUT guide](P3_LUT_GUIDE.md) · [P7 CSV guide](P7_CSV_GUIDE.md).
 
-## Android
-Android companion source includes output size/JPEG quality, reference CSV->LUT, basic native Undo/Redo/favorites/one custom recipe and gallery batch save. Android native does not yet support the web split slider, ZIP batch or multi-custom JSON.
-Android SDK compilation/device test not verified.
+Older per-version HANDOFF and QA notes are in Git history and the `backup/v0.14.0-before-20261026-cleanup` branch, rather than cluttering the deployed main branch.
 
-## QA
-Chromium injected-script tests desktop+mobile: photo load, 2800x1800 original output, quality, LUT fitting, split, history/custom and batch ZIP PASS.
-Java regression 77 recipes / 20,097 RGB inputs and ReferenceCalibrator PASS.
-GitHub Pages Actions deployment succeeded; real live browser HTTP access was blocked in test environment.
-
-Read HANDOFF_v0.14.0_WEB.md, QA_REPORT_WEB_v0.14.0.md, and P7_CSV_GUIDE.md.
+## QA / limitations
+Static/source regression checks performed for this patch; live browser and real-device HEIC/large-image behavior remain **unverified**. See [QA_REPORT.md](QA_REPORT.md). On mobile, start with 12MP export. Vendor components and LGPL source obligations are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
