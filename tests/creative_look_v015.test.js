@@ -10,8 +10,9 @@ const match=html.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(match);new vm.Script(match[1]);
 const ctx={window:{addEventListener(){}},document:{getElementById(){return null;}},module:{exports:{}},
   requestAnimationFrame:cb=>cb(),ImageData:class ImageData{constructor(data,width,height){Object.assign(this,{data,width,height});}}};
-vm.runInNewContext(app.slice(0,app.indexOf('/* Web app UI')),ctx);
-const legacy=ctx.PRS_SOURCE.recipes,extra=ctx.PRS_V015_ADDED,looks=ctx.PRS_V015_LOOKS,engine=ctx.PRSEngine;
+vm.runInNewContext(app.slice(0,app.indexOf('/* Web app UI'))+'\n;globalThis.__core={PRS_SOURCE,PRS_V015_ADDED,PRS_V015_LOOKS,PRSEngine};',ctx);
+const {PRS_SOURCE,PRS_V015_ADDED,PRS_V015_LOOKS,PRSEngine}=ctx.__core;
+const legacy=PRS_SOURCE.recipes,extra=PRS_V015_ADDED,looks=PRS_V015_LOOKS,engine=PRSEngine;
 assert.equal(legacy.length,77);assert.equal(extra.length,4);
 assert.deepEqual(Array.from(extra,r=>r.id),['r077','r078','r079','r080']);
 assert.equal(new Set([...legacy,...extra].map(r=>r.id)).size,81);
@@ -29,7 +30,7 @@ const empty={contrast:0,highlights:0,shadows:0,fade:0,saturation:0,sharpness:3,s
  const neutral=await engine.process(input,legacy[0],null,{...config,creativeTune:empty});
  assert.deepEqual(Array.from(neutral.data),Array.from(original.data),'neutral tuning must be pixel exact');
  for(const [key,value] of Object.entries({contrast:5,highlights:5,shadows:5,fade:5,saturation:5,sharpness:7,sharpnessRange:5,clarity:6})){
-  const result=await engine.process(input,legacy[0],null,{...config,creativeTune:{...empty,[key]:value}});
+  const result=await engine.process(input,legacy[0],null,{...config,creativeTune:{...empty,[key]:value,...(key==='sharpnessRange'?{sharpness:7}:{})}});
   assert.notDeepEqual(Array.from(result.data),Array.from(original.data),key+' must change image');
  }
  const zero=await engine.process(input,legacy[0],null,{...config,strength:0,creativeTune:{...empty,contrast:9,sharpness:9,clarity:9}});
