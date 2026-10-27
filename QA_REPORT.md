@@ -30,3 +30,9 @@ Check the GitHub Actions Pages run for the release commit and perform the real s
 
 ## v0.15.1 QA
 Added source-only FL reference LUT regression and refreshed desktop/mobile Chromium smoke test for 82 recipes and v0.15.1. Color measurement statistics are single-scene only; real photo reference files excluded from public source. Actual camera fidelity for additional scenes is unverified.
+
+## v0.15.2 Mobile UI QA
+- Automated Chromium mobile at 390x844: scroll to the rightmost Sony chips, choose FL2/FL3/FL1 consecutively; ensure horizontal scroll remains near last position and chip DOM nodes persist.
+- Mobile custom company/film menu displays all categories, tap Kodak changes first recipe immediately without native 'Done', auto-closes and updates selection; tapping Sony returns with correct category.
+- Desktop native select retained; all previously tested photo imports, saves, batch ZIP, FL LUT and custom slots must still pass.
+- Real iOS Safari and Android WebView hands-on QA remains recommended because native browser focus/scroll behavior can differ.

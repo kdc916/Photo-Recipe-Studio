@@ -1,4 +1,4 @@
-/* v0.15.0 real Chromium smoke: image IO, new looks, sliders, slots, ZIP.
+/* v0.15.2 real Chromium smoke: image IO, new looks, sliders, slots, ZIP.
    npm install --no-save playwright-core@1.56.1
    node tests/browser_smoke_v015.test.js */
 'use strict';
@@ -26,7 +26,7 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
    const page=await ctx.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load'});
-   await page.waitForFunction(()=>window.PRS_BOOT?.state==='ready'&&window.PRS_EXTENSION?.version==='0.15.1');
+   await page.waitForFunction(()=>window.PRS_BOOT?.state==='ready'&&window.PRS_EXTENSION?.version==='0.15.2');
    assert.equal(await page.evaluate(()=>window.PRS_TEST.allRecipes.length),82);
    const png=await page.evaluate(async()=>{
     const canvas=document.createElement('canvas');canvas.width=240;canvas.height=150;
@@ -37,7 +37,36 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
    const image=Buffer.from(png.split(',')[1],'base64');
    await page.locator('#imageInput').setInputFiles({name:'qa.png',mimeType:'image/png',buffer:image});
    await page.waitForFunction(()=>window.PRS_TEST.state.filtered?.width===240,{timeout:20000});
-   await page.locator('#groupSelect').selectOption('Sony');
+   if(viewport.width<=850){
+     const category=page.locator('#groupPickerTrigger'),menu=page.locator('#groupPickerMenu');
+     assert.equal(await page.locator('#groupSelect').isVisible(),false,'mobile must not show native select');
+     await category.click();
+     assert.equal(await category.getAttribute('aria-expanded'),'true');
+     await menu.getByRole('button',{name:'Kodak'}).click();
+     assert.equal(await category.getAttribute('aria-expanded'),'false','tap applies and closes without Done');
+     assert.equal(await menu.isVisible(),false);
+     assert.equal(await page.evaluate(()=>window.PRS_TEST.state.currentGroup),'Kodak');
+     assert.equal(await page.evaluate(()=>window.PRS_TEST.state.recipe.group),'Kodak');
+     await category.click();
+     await menu.getByRole('button',{name:'Sony'}).click();
+     assert.equal(await page.evaluate(()=>window.PRS_TEST.state.currentGroup),'Sony');
+     const strip=page.locator('#recipeList');
+     await strip.evaluate(el=>{el.scrollLeft=el.scrollWidth-el.clientWidth;});
+     await page.waitForTimeout(120);
+     const before=await strip.evaluate(el=>el.scrollLeft);
+     assert.ok(before>15,'Sony recipes must be horizontally scrollable on mobile');
+     const nodeStable=await page.evaluate(()=>{window.__prsLastChip=document.querySelector('#recipeList .recipe-chip:last-child');return true;});
+     assert.equal(nodeStable,true);
+     await page.getByRole('button',{name:'Sony FL2 (reference match)'}).click();
+     await page.waitForTimeout(150);
+     assert.ok(await strip.evaluate(el=>el.scrollLeft)>15,'FL2 selection must not reset to left');
+     assert.ok(await page.evaluate(()=>window.__prsLastChip===document.querySelector('#recipeList .recipe-chip:last-child')),'recipe chip DOM should be reused');
+     await page.getByRole('button',{name:'Sony FL3 (reference match)'}).click();
+     await page.waitForTimeout(150);
+     assert.ok(await strip.evaluate(el=>el.scrollLeft)>15,'FL3 selection must keep scroll');
+   }else{
+     await page.locator('#groupSelect').selectOption('Sony');
+   }
    await page.getByRole('button',{name:'Sony FL2 (reference match)'}).click();
    await page.waitForFunction(()=>window.PRS_TEST.state.recipe.id==='r077'&&window.PRS_TEST.state.filtered);
    await page.waitForTimeout(500);
@@ -80,7 +109,7 @@ const launchPaths=['/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chr
    assert.ok(fs.statSync(await batch.path()).size>200);
    assert.deepEqual(errors,[],'unexpected page JS errors');
    await ctx.close();
-   console.log('PASS browser viewport',viewport.width,viewport.height,'81 looks / files / contrast / custom slot / JPG / batch ZIP');
+   console.log('PASS browser viewport',viewport.width,viewport.height,'82 looks / scroll / mobile category / files / contrast / custom slot / JPG / batch ZIP');
   }
  }finally{await browser.close();}
 })().catch(err=>{console.error(err);process.exitCode=1}).finally(()=>server.close());

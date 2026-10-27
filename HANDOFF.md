@@ -33,3 +33,8 @@ Former version-specific `HANDOFF_v*.md` and `QA_REPORT_WEB_v*.md` root notes hav
 
 ## v0.15.1 (2026-10-26) FL reference calibration
 77 original PMCA recipes unchanged; +1 Sony FL1 r081, FL2 r077 and FL3 r078 use independently fitted 33-cube color transforms from four user ILCE-7M5 JPEGs; 82 total. Standard Display P3 and FL sRGB were color-managed before alignment, robust cubic regression and color LUT construction. Source photos are NOT committed. In-sample aligned scene RGB MAE before→after: FL1 29.55→3.87; FL2 21.03→1.85; FL3 23.38→2.55 per 255. Not independent validation. See FL_REFERENCE_CALIBRATION.md. Existing P9 8 controls, 6 slots, P8 JSON V1/V2 support and batch/export remain intact.
+
+## v0.15.2 (2026-10-27) Mobile recipe-strip and category picker
+- Fixed horizontal recipe strip jumping to start: `renderRecipes()` now only rebuilds on category change, updates selected chip classes/aria-pressed in place, and tracks `scrollLeft` by group.
+- Mobile viewport <=850px uses touch-first inline company/film category button-grid, not native `select` requiring a 'Done' tap. Choosing a group immediately selects its first recipe and closes picker. Desktop still uses native select.
+- `PRS_EXTENSION.onRecipeChanged` refreshes favorites when selected chip changes without MutationObserver child replacement. Existing P8 storage keys, all 82 recipes, LUTs, P9 settings are not changed.

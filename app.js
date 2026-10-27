@@ -1,6 +1,6 @@
 
 // Build v0.8.0 P1: unchanged external script runtime, opt-in stock profiles. Failure is visible rather than silently skipping filters.
-window.PRS_DIAGNOSTIC={version:'0.15.1',engineReady:false};
+window.PRS_DIAGNOSTIC={version:'0.15.2',engineReady:false};
 window.addEventListener('error',function(event){
   const status=document.getElementById('status');
   if(status){status.classList.add('error');status.textContent='실행 오류: '+(event.message||'알 수 없는 오류')+' · 새로고침 후 다시 확인해주세요.';}
@@ -342,7 +342,7 @@ const PRSEngine = (() => {
   }
 
   // P9 approximate Creative Look fine tuning, evaluated in display sRGB.
-  // Default 0/0/0/0/0/3/3/0 leaves the v0.15.1 output pixel-exact.
+  // Default 0/0/0/0/0/3/3/0 leaves the v0.15.2 output pixel-exact.
   function creativeTunePixel(rgb,tune,amount){
     const con=Number(tune.contrast)||0,hi=Number(tune.highlights)||0,
       sh=Number(tune.shadows)||0,fade=Number(tune.fade)||0,sat=Number(tune.saturation)||0;
@@ -541,22 +541,93 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
       el[id].value=String(value);byId(id+'Value').textContent=value+'%';
     }
   }
+  // Mobile: retain the horizontal recipe strip DOM and its scroll position on selection.
+  // Group switches can restore the last position for each category.
+  const recipeScrollByGroup=new Map();
+  const groupPickerMobile=byId('groupPickerMobile'),groupPickerTrigger=byId('groupPickerTrigger'),groupPickerMenu=byId('groupPickerMenu');
+  const groupPickerButtons=new Map();
+  function setGroupPickerOpen(open){
+    groupPickerMenu.hidden=!open;
+    groupPickerTrigger.setAttribute('aria-expanded',String(open));
+    groupPickerTrigger.classList.toggle('active',open);
+  }
+  function syncGroupPicker(){
+    el.group.value=state.currentGroup;
+    groupPickerTrigger.textContent=state.currentGroup+'  ▾';
+    for(const [group,button] of groupPickerButtons){
+      const selected=group===state.currentGroup;
+      button.classList.toggle('selected',selected);
+      button.setAttribute('aria-pressed',String(selected));
+    }
+  }
   function chooseRecipe(recipe){
-    if(!recipe)return;
-    if(state.recipe&&state.recipe.id===recipe.id)return;
+    if(!recipe||state.recipe?.id===recipe.id)return;
     state.recipe=recipe;resetGrain();
     renderRecipes();requestPreview();
   }
-  function renderRecipes(){el.list.replaceChildren();const list=allRecipes.filter(r=>r.group===state.currentGroup);
+  function renderRecipes(){
+    const group=state.currentGroup,list=allRecipes.filter(r=>r.group===group);
+    const rebuild=el.list.dataset.group!==group||el.list.children.length!==list.length;
+    if(rebuild){
+      // Explicitly keep the previous group's location before clearing its DOM.
+      const previous=el.list.dataset.group;
+      if(previous)recipeScrollByGroup.set(previous,el.list.scrollLeft);
+      const fragment=document.createDocumentFragment();
+      for(const r of list){
+        const button=document.createElement('button');
+        button.className='recipe-chip';button.type='button';button.textContent=r.name;
+        button.dataset.recipeId=r.id;
+        button.addEventListener('click',()=>{state.listChoice=true;chooseRecipe(r);});
+        fragment.append(button);
+      }
+      el.list.replaceChildren(fragment);
+      el.list.dataset.group=group;
+      el.list.scrollLeft=recipeScrollByGroup.get(group)||0;
+    }
+    // In-place state update: does not reset iOS/Android horizontal scroll.
+    for(const chip of el.list.children){
+      const selected=chip.dataset.recipeId===state.recipe?.id;
+      chip.classList.toggle('selected',selected);
+      chip.setAttribute('aria-pressed',String(selected));
+    }
     el.count.textContent=`${list.length} / ${allRecipes.length}개`;
-    for(const r of list){const button=document.createElement('button');button.className='recipe-chip'+(r.id===state.recipe.id?' selected':'');
-      button.type='button';button.textContent=r.name;button.setAttribute('aria-pressed',String(r.id===state.recipe.id));
-      button.addEventListener('click',()=>{state.listChoice=true;chooseRecipe(r);});el.list.append(button);}
+    syncGroupPicker();
     displayRecipe();
+    if(window.PRS_EXTENSION?.onRecipeChanged)window.PRS_EXTENSION.onRecipeChanged();
   }
-  groups.forEach(g=>{const opt=document.createElement('option');opt.value=g;opt.textContent=g;el.group.append(opt);});
-  el.group.value=state.currentGroup;
-  el.group.addEventListener('change',()=>{state.currentGroup=el.group.value;const selected=allRecipes.find(r=>r.group===state.currentGroup);if(state.recipe?.id!==selected?.id){chooseRecipe(selected);}else renderRecipes();});
+  el.list.addEventListener('scroll',()=>{
+    const group=el.list.dataset.group;
+    if(group)recipeScrollByGroup.set(group,el.list.scrollLeft);
+  },{passive:true});
+  function selectGroup(group){
+    if(!groups.includes(group))return;
+    const changed=state.currentGroup!==group;
+    state.currentGroup=group;
+    if(changed){
+      const selected=allRecipes.find(r=>r.group===group);
+      if(selected&&selected.id!==state.recipe?.id)chooseRecipe(selected);
+      else renderRecipes();
+    }else renderRecipes();
+  }
+  groups.forEach(g=>{
+    const opt=document.createElement('option');opt.value=g;opt.textContent=g;el.group.append(opt);
+    const btn=document.createElement('button');btn.type='button';btn.className='group-picker-option';
+    btn.textContent=g;btn.dataset.group=g;
+    btn.addEventListener('click',()=>{
+      selectGroup(g);setGroupPickerOpen(false);
+      groupPickerTrigger.focus({preventScroll:true});
+    });
+    groupPickerButtons.set(g,btn);
+    groupPickerMenu.append(btn);
+  });
+  groupPickerTrigger.addEventListener('click',()=>setGroupPickerOpen(groupPickerMenu.hidden));
+  groupPickerMobile.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!groupPickerMenu.hidden){setGroupPickerOpen(false);groupPickerTrigger.focus({preventScroll:true});e.preventDefault();}
+  });
+  document.addEventListener('pointerdown',e=>{
+    if(!groupPickerMenu.hidden&&!groupPickerMobile.contains(e.target))setGroupPickerOpen(false);
+  },{passive:true});
+  el.group.addEventListener('change',()=>selectGroup(el.group.value));
   renderRecipes();
   function setDisabled(disabled){el.save.disabled=disabled||!state.file;el.compare.disabled=!state.file;el.fit.disabled=!state.file;}
   // File picker must remain reachable even if the previous image was corrupt or too large.
@@ -773,7 +844,7 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
     if(heicLoader)return heicLoader;
     heicLoader=new Promise((resolve,reject)=>{
       const script=document.createElement('script');
-      script.src='./vendor/heic2any.min.js?v=0.15.1';script.async=true;
+      script.src='./vendor/heic2any.min.js?v=0.15.2';script.async=true;
       script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC 디코더 초기화 실패'));
       script.onerror=()=>reject(new Error('HEIC 디코더 파일이 없습니다 (vendor/heic2any.min.js)'));
       document.head.appendChild(script);
@@ -874,10 +945,10 @@ if(typeof module!=='undefined')module.exports=PRSEngine;
   const identity=allRecipes.find(r=>r.id==='r000');
   const identityPix=processor.pixel(135,118,104,processor.prepare(identity,null,1,false,{},true));
   const healthy=monoPix[0]===monoPix[1]&&monoPix[1]===monoPix[2]&&identityPix.join(',')==='135,118,104';
-  window.PRS_DIAGNOSTIC={version:'0.15.1',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
+  window.PRS_DIAGNOSTIC={version:'0.15.2',engineReady:healthy,monoPixel:monoPix,identityPixel:identityPix};
   if (!healthy) throw new Error('컬러 엔진 자가 진단 실패: 흑백 변환 또는 FACTORY 원본 보존');
   setStatus('컬러 엔진 준비 완료 · 77개 레시피 · 사진을 열어주세요.');
   // Internal test hooks, no network / no production automation.
-  window.PRS_BOOT={state:'ready',version:'0.15.1',source:'app.js'};
+  window.PRS_BOOT={state:'ready',version:'0.15.2',source:'app.js'};
   window.PRS_TEST={state,el,processor,allRecipes,parseExif,opts,getLook,decode,openFile,decodeWithHeicFallback,isHeicFile,loadHeicDecoder,P2_LOOKS,P2_TEXTURES,getTexture,renderRecipes,requestPreview,chooseRecipe,setStatus,setDisabled,progress,creativeIds,creativeDefaults,resetCreative};
 })();

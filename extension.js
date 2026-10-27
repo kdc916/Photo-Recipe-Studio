@@ -1,4 +1,4 @@
-/* Photo Recipe Studio v0.15.1 — P6/P7/P8/P9 browser workflow.
+/* Photo Recipe Studio v0.15.2 — P6/P7/P8/P9 browser workflow.
    Original 77 PMCA presets preserved; P9 adds 4 independent approximations. */
 (()=>{
 'use strict';
@@ -7,7 +7,7 @@ const $=id=>document.getElementById(id);
 if(!api||!api.state||!api.processor){$('status').textContent='확장 기능을 시작할 수 없습니다. 기본 사진 편집 기능은 유지됩니다.';return;}
 const {state,el,processor}=api;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
-const version='0.15.1';
+const version='0.15.2';
 const readJson=(key,fallback)=>{try{const d=JSON.parse(localStorage.getItem(key));return d??fallback;}catch{return fallback;}};
 const writeJson=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{api.setStatus('브라우저 저장소 사용 불가 · 이번 세션에서만 사용',true);return false;}};
 const keyFav='prs-v014-favorites',keyCustom='prs-v014-custom',keySlots='prs-v015-look-slots';
@@ -275,6 +275,6 @@ $('batchRun').onclick=async()=>{const files=[...$('batchFiles').files];if(batchB
  downloadBlob(zipFiles(zip),'PRS_Batch_'+Date.now()+'.zip');api.setStatus('사진 '+zip.length+'장 JPG 일괄 변환 완료 · ZIP 저장');
  }catch(err){api.setStatus('일괄 변환 실패: '+err.message,true);}finally{batchBusy=false;$('batchRun').disabled=false;}
 };
-window.PRS_EXTENSION={version,exportPhoto,onPresent:updateComparison,onCoreSettingsChanged:record,deltaE00,parsePairs,makeCube,zipFiles,get historyLength(){return history.length;},get favorites(){return [...favorites];},get lookSlots(){return slots.map(s=>s?.name||null);}};
+window.PRS_EXTENSION={version,exportPhoto,onPresent:updateComparison,onCoreSettingsChanged:record,onRecipeChanged:applyFavoriteBadge,deltaE00,parsePairs,makeCube,zipFiles,get historyLength(){return history.length;},get favorites(){return [...favorites];},get lookSlots(){return slots.map(s=>s?.name||null);}};
 buttons();applyFavoriteBadge();api.setStatus('P6~P9 준비 완료 · 82개 레시피 · 사진을 열어주세요.');
 })();
